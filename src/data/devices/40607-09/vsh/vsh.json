@@ -1,0 +1,94 @@
+{
+    "id": "40607-09-vsh",
+    "name": "ВСХ",
+    "methodology": "МП 40607-09 'Счетчики холодной и горячей воды ВСХ, ВСХд, ВСГ, ВСГд, ВСТ. Методика поверки', согласованным ФГУП 'ВНИИМС' 11.02.2009 г.",
+    "standards": "Спросить у Ани",
+    "hasTypes": false,
+    "hasClasses": false,
+    "hasComposition": false,
+    "nextVerificationPeriod": 6,
+    "errorLimits": ["5.0", "2.0", "2.0"],
+    "diameters": {
+      "15-0.6": {
+        "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.012, "volume": 2.5 },
+          { "flow": 0.048, "volume": 5 },
+          { "flow": 0.6, "volume": 20 }
+        ]
+      },
+      "15-1": {
+        "displayName": "ДУ-15 мм (Qn=1 м³/ч)",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.02, "volume": 2.5 },
+          { "flow": 0.08, "volume": 5 },
+          { "flow": 1, "volume": 20 }
+        ]
+      },
+      "15-1.5": {
+        "displayName": "ДУ-15 мм (Qn=1.5 м³/ч)",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.03, "volume": 2.5 },
+          { "flow": 0.12, "volume": 5 },
+          { "flow": 1.5, "volume": 20 }
+        ]
+      },
+      "20": {
+        "displayName": "ДУ-20 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.05, "volume": 5 },
+          { "flow": 0.2, "volume": 10 },
+          { "flow": 2.5, "volume": 50 }
+        ]
+      },
+      "25": {
+        "displayName": "ДУ-25 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.07, "volume": 5 },
+          { "flow": 0.28, "volume": 10 },
+          { "flow": 3.5, "volume": 50 }
+        ]
+      },
+      "32": {
+        "displayName": "ДУ-32 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.12, "volume": 10 },
+          { "flow": 0.48, "volume": 20 },
+          { "flow": 6, "volume": 100 }
+        ]
+      },
+      "40": {
+        "displayName": "ДУ-40 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.2, "volume": 25 },
+          { "flow": 0.8, "volume": 50 },
+          { "flow": 10, "volume": 200 }
+        ]
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр п. 4.1.",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Проверка герметичности п. 4.2.",
+        "type": "boolean",
+        "order": 2
+      },
+      {
+        "name": "Определение метрологических характеристик: - Определение относительной погрешности измерения п. 4.3.",
+        "type": "measurement",
+        "hasTable": true,
+        "order": 3
+      }
+    ]
+  }

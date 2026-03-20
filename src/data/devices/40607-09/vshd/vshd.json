@@ -1,0 +1,81 @@
+{
+    "id": "40607-09-vshd",
+    "name": "ВСХд",
+    "methodology": "МП 40607-09 'Счетчики холодной и горячей воды ВСХ, ВСХд, ВСГ, ВСГд, ВСТ. Методика поверки', согласованным ФГУП 'ВНИИМС' 11.02.2009 г.",
+    "standards": "Спросить у Ани",
+    "hasTypes": false,
+    "hasClasses": false,
+    "hasComposition": false,
+    "nextVerificationPeriod": 6,
+    "errorLimits": ["5.0", "2.0", "2.0"],
+    "diameters": {
+      "15": {
+        "displayName": "ДУ 15 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.1, "volume": 31 },
+          { "flow": 0.5, "volume": 102 },
+          { "flow": 2.0, "volume": 305 }
+        ]
+      },
+      "20": {
+        "displayName": "ДУ 20 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.2, "volume": 51 },
+          { "flow": 1.0, "volume": 152 },
+          { "flow": 3.0, "volume": 405 }
+        ]
+      },
+      "25": {
+        "displayName": "ДУ 25 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.3, "volume": 71 },
+          { "flow": 1.5, "volume": 202 },
+          { "flow": 4.0, "volume": 505 }
+        ]
+      },
+      "32": {
+        "displayName": "ДУ 32 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.25, "volume": 81 },
+          { "flow": 1.0, "volume": 202 },
+          { "flow": 4.0, "volume": 605 }
+        ]
+      },
+      "40": {
+        "displayName": "ДУ 40 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.3, "volume": 91 },
+          { "flow": 1.2, "volume": 252 },
+          { "flow": 5.0, "volume": 705 }
+        ]
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр п. 4.1.",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Проверка герметичности п. 4.2.",
+        "type": "boolean",
+        "order": 2
+      },
+      {
+        "name": "Определение метрологических характеристик: - Определение относительной погрешности измерения п. 4.3.",
+        "type": "measurement",
+        "hasTable": true,
+        "order": 3
+      },
+      {
+        "name": "Проверка соответствия отсчетного устройства счетчика и числа импульсов дистанционного выходного сигнала п. 4.4.",
+        "type": "measurement",
+        "order": 4
+      }
+    ]
+  }

@@ -1,0 +1,444 @@
+import React from 'react';
+import { Download } from 'lucide-react';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+
+// Правильная инициализация шрифтов
+if (pdfFonts) {
+  pdfMake.vfs = pdfFonts;
+}
+
+function PDFGenerator({ 
+  device, 
+  currentData, 
+  serialNumber, 
+  diameter, 
+  deviceType,
+  selectedModel,
+  deviceClass,
+  composition, 
+  protocolNumber, 
+  operationsResults, 
+  measurementData, 
+  verificationDate 
+}) {
+  
+  const generatePDF = () => {
+    try {
+      // Функция для получения случайных значений
+      const getRandomFactor = (min, max) => (Math.random() * (max - min) + min).toFixed(1);
+      
+      // Форматирование даты
+      const today = new Date();
+      const verificationDateObj = verificationDate || today;
+      
+      // Берем операции из currentData или device
+      const operations = currentData?.operations || device?.operations || [];
+      
+      // Определяем годен/не годен (для заключения)
+      const isAllPassed = operations.length > 0 ? operations.every(op => 
+        operationsResults[op.name] === 'Соответствует'
+      ) : false;
+
+      // Рассчитываем следующую дату только если прибор годен
+      let nextDate = null;
+      if (isAllPassed) {
+        const period = currentData?.nextVerificationPeriod || device?.nextVerificationPeriod || 1;
+        nextDate = new Date(verificationDateObj);
+        nextDate.setFullYear(nextDate.getFullYear() + period);
+        nextDate.setDate(nextDate.getDate() - 1);
+      }
+
+      const formatDate = (date) => {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}.${month}.${year}`;
+      };
+
+      // Создаем массив с операциями (название жирным, значение обычным)
+      const operationsList = [];
+      operations.forEach(op => {
+        const result = operationsResults[op.name] || 'Не проводилась';
+        operationsList.push({
+          text: [
+            { text: `${op.name}: `, bold: true },
+            { text: result }
+          ],
+          margin: [10, 3, 0, 0]
+        });
+      });
+
+      // Создаем таблицу измерений
+      let measurementTable = null;
+      
+      const hasMeasurementData = measurementData && 
+        Object.keys(measurementData).some(key => key.includes('col_1') && measurementData[key]);
+      
+      if (hasMeasurementData) {
+        
+        const tableBody = [
+          [
+            { text: '№', style: 'tableHeader' },
+            { text: 'Расход, м³/ч', style: 'tableHeader' },
+            { text: 'Показания установки, л', style: 'tableHeader' },
+            { text: 'Показания счетчика', style: 'tableHeader' },
+            { text: 'Относительная погрешность, %', style: 'tableHeader' },
+            { text: 'Пределы допускаемой относительной погрешности, %', style: 'tableHeader' }
+          ]
+        ];
+
+        for (let row = 1; row <= 3; row++) {
+          let errorLimit = measurementData[`row_${row}_col_5`] || '—';
+          if (errorLimit !== '—') {
+            errorLimit = errorLimit.replace('±', '');
+          }
+
+          const rowData = [
+            { text: row.toString(), style: 'tableCell' },
+            { text: measurementData[`row_${row}_col_1`] || '—', style: 'tableCell' },
+            { text: measurementData[`row_${row}_col_2`] || '—', style: 'tableCell' },
+            { text: measurementData[`row_${row}_col_3`] || '—', style: 'tableCell' },
+            { text: measurementData[`row_${row}_col_4`] || '—', style: 'tableCell' },
+            { text: errorLimit, style: 'tableCell' }
+          ];
+          tableBody.push(rowData);
+        }
+
+        measurementTable = {
+          table: {
+            headerRows: 1,
+            widths: ['5%', '15%', '20%', '20%', '20%', '20%'],
+            body: tableBody
+          },
+          layout: {
+            fillColor: function(rowIndex) {
+              return rowIndex === 0 ? '#f0f0f0' : null;
+            },
+            hLineWidth: function(i) {
+              return 0.5;
+            },
+            vLineWidth: function(i) {
+              return 0.5;
+            },
+            hLineColor: function(i) {
+              return '#aaa';
+            },
+            vLineColor: function(i) {
+              return '#aaa';
+            }
+          },
+          margin: [20, 10, 20, 10]
+        };
+      }
+
+      // Формируем полное название прибора с учётом модели и класса
+      const getFullDeviceName = () => {
+        let name = '';
+        
+        // Для приборов с моделями (40607-09)
+        if (device.models && selectedModel) {
+          const model = device.models[selectedModel];
+          if (model) {
+            // Полное описание из госреестра
+            name = device.name || "Счетчики холодной и горячей воды ВСХ, ВСХд, ВСГ, ВСГд, ВСТ.";
+            // Добавляем название модели
+            const modelDisplay = model.displayName?.replace(' (холодная вода)', '') || model.name || selectedModel;
+            name = `${name} ${modelDisplay}`;
+          }
+        }
+        
+        // Для приборов с типами (15820-07)
+        if (device.hasTypes && deviceType) {
+          const type = device.types[deviceType];
+          if (type) {
+            name = `${device.name} (${type.displayName})`;
+          }
+        }
+        
+        // Если нет моделей и нет типов (простой прибор)
+        if (!device.models && !device.hasTypes) {
+          name = device.name;
+        }
+        
+        // Добавляем класс, если есть
+        if (deviceClass) {
+          const classDisplay = deviceClass === 'classA' ? 'класс А' : 'класс В';
+          name = `${name} (${classDisplay})`;
+        }
+        
+        // Добавляем диаметр
+        if (diameter) {
+          if (diameter.includes('-')) {
+            // Для формата "15-1.5" нужно получить displayName
+            if (currentData && currentData.diameters && currentData.diameters[diameter]) {
+              const diameterData = currentData.diameters[diameter];
+              const diameterDisplay = diameterData.displayName || `ДУ-${diameter}`;
+              name = `${name} ${diameterDisplay}`;
+            } else {
+              name = `${name} ДУ-${diameter}`;
+            }
+          } else {
+            name = `${name} ДУ-${diameter}`;
+          }
+        }
+        
+        return name;
+      };
+
+      const deviceFullName = getFullDeviceName();
+
+      // Формируем текст для состава
+      const compositionText = composition && composition.trim() !== '' ? composition : '—';
+
+      // Получаем ширину страницы A4 в точках (595.28) и вычисляем центр
+      const pageWidth = 595.28;
+      const leftMargin = 40;
+      const rightMargin = 40;
+      const contentWidth = pageWidth - leftMargin - rightMargin; // 515.28
+
+      // Функция для создания поля с жирным заголовком и курсивным значением
+      const createFieldWithLine = (label, value) => {
+        // Проверяем, что value существует
+        const safeValue = value || '—';
+        const fullText = `${label} ${safeValue}`;
+        
+        // Разбиваем текст на строки, которые помещаются по ширине
+        const words = fullText.split(' ');
+        const lines = [];
+        let currentLine = '';
+        
+        const charsPerLine = Math.floor(contentWidth / 6);
+        
+        words.forEach(word => {
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
+          if (testLine.length <= charsPerLine) {
+            currentLine = testLine;
+          } else {
+            if (currentLine) lines.push(currentLine);
+            currentLine = word;
+          }
+        });
+        if (currentLine) lines.push(currentLine);
+        
+        const stackContent = [];
+        
+        // Для каждой строки добавляем текст и линию под ней
+        lines.forEach((line, index) => {
+          if (index === 0) {
+            // Первая строка: жирный заголовок + значение
+            // Отделяем заголовок от значения
+            const valuePart = line.substring(label.length).trim();
+            stackContent.push({ 
+              text: [
+                { text: label, bold: true },
+                { text: valuePart ? ' ' + valuePart : '', italics: true }
+              ],
+              margin: [0, 3, 0, 1] 
+            });
+          } else {
+            // Последующие строки: только значение (курсив)
+            stackContent.push({ 
+              text: line, 
+              italics: true,
+              margin: [0, 1, 0, 1] 
+            });
+          }
+          
+          // Добавляем линию под каждой строкой
+          stackContent.push({
+            canvas: [
+              {
+                type: 'line',
+                x1: 0,
+                y1: 0,
+                x2: contentWidth,
+                y2: 0,
+                lineWidth: 0.5,
+                lineColor: '#333333'
+              }
+            ]
+          });
+        });
+        
+        return {
+          stack: stackContent,
+          margin: [0, 2, 0, 2]
+        };
+      };
+
+      // Формируем содержимое для дат в зависимости от годности
+      const datesContent = isAllPassed && nextDate
+        ? {
+            columns: [
+              { width: '50%', text: `Дата поверки: ${formatDate(verificationDateObj)}`, alignment: 'left' },
+              { width: '50%', text: `Дата следующей поверки: ${formatDate(nextDate)}`, alignment: 'right' }
+            ],
+            margin: [0, 5, 0, 25]
+          }
+        : {
+            text: `Дата поверки: ${formatDate(verificationDateObj)}`,
+            alignment: 'left',
+            margin: [0, 5, 0, 25]
+          };
+
+      // Создаем структуру документа
+      const docDefinition = {
+        pageSize: 'A4',
+        pageMargins: [leftMargin, 40, rightMargin, 40],
+        content: [
+          // 1. Шапка
+          { text: 'ООО «Нижегородский центр метрологии им. Профессора Т.Н. Праховой»', fontSize: 14, bold: true, alignment: 'center' },
+          { text: '606040, Нижегородская обл., г. Дзержинск, ул. Зеленая, д.10', fontSize: 10, alignment: 'center', margin: [0, 0, 0, 5] },
+          
+          // 1.1 Жирная черта по центру
+          {
+            canvas: [
+              {
+                type: 'line',
+                x1: 0,
+                y1: 0,
+                x2: contentWidth,
+                y2: 0,
+                lineWidth: 1.5,
+                lineColor: '#333333'
+              }
+            ],
+            alignment: 'center',
+            margin: [0, 0, 0, 10]
+          },
+          
+          // 2. Номер аккредитации по центру, курсивом
+          { 
+            text: 'Уникальный номер записи об аккредитации в реестре аккредитованных лиц RA.RU.314030', 
+            italics: true,
+            fontSize: 10,
+            alignment: 'center',
+            margin: [0, 5, 0, 10]
+          },
+          
+          // 3. Номер протокола
+          { text: `ПРОТОКОЛ ПОВЕРКИ ${protocolNumber}`, fontSize: 16, bold: true, alignment: 'center', margin: [0, 10, 0, 10] },
+          
+          // 4. Информация о приборе с жирными заголовками и курсивными значениями
+          createFieldWithLine('Средство измерений:', deviceFullName),
+          createFieldWithLine('Заводской (серийный) номер:', serialNumber),
+          createFieldWithLine('В составе:', compositionText),
+          createFieldWithLine('Поверено в соответствии с:', device.common?.methodology || currentData?.methodology || '—'),
+          createFieldWithLine('С применением эталонов и рабочих СИ:', device.common?.standards || currentData?.standards || '—'),
+          
+          // Добавляем отступ после информации о приборе
+          { text: '', margin: [0, 10, 0, 0] },
+          
+          // 5. Заголовок влияющих факторов
+          { text: 'При следующих влияющих факторах:', bold: true, margin: [0, 5, 0, 5] },
+          
+          // 5.1 Влияющие факторы с серым фоном
+          {
+            stack: [
+              { text: 'Температура поверочной жидкости: ' + getRandomFactor(15.4, 18.9) + ' °C', margin: [10, 5, 0, 2] },
+              { text: 'Температура окружающего воздуха: ' + getRandomFactor(15.4, 22.2) + ' °C', margin: [10, 2, 0, 2] },
+              { text: 'Относительная влажность: ' + getRandomFactor(45.2, 50.8) + ' %', margin: [10, 2, 0, 2] },
+              { text: 'Атмосферное давление: ' + getRandomFactor(90.1, 102.7) + ' кПа', margin: [10, 2, 0, 5] }
+            ],
+            background: '#f5f5f5',
+            margin: [0, 0, 0, 10]
+          },
+          
+          // 6. Результаты поверки
+          { text: 'Результаты поверки', fontSize: 12, bold: true, margin: [0, 10, 0, 5] },
+          
+          // 7. Операции поверки (название жирным, значение обычным)
+          ...operationsList,
+          
+          // 8. Таблица измерений
+          ...(measurementTable ? [measurementTable] : []),
+          
+          // 9. Заключение
+          { 
+            text: `Заключение о пригодности: ${isAllPassed ? 'ГОДЕН' : 'НЕ ГОДЕН'}`,
+            bold: true,
+            margin: [0, 15, 0, 5],
+            fontSize: 12,
+            color: isAllPassed ? 'green' : 'red'
+          },
+          
+          // 10. Даты (меняются в зависимости от годности)
+          datesContent,
+          
+          // 11. Поверитель с линиями на одной строке
+          {
+            columns: [
+              { width: '30%', text: 'Поверитель:', alignment: 'left' },
+              { width: '35%', text: '____________________', alignment: 'center' },
+              { width: '35%', text: '____________________', alignment: 'center' }
+            ],
+            margin: [0, 10, 0, 5]
+          },
+          
+          // 12. Подписи под линиями
+          {
+            columns: [
+              { width: '30%', text: '', alignment: 'left' },
+              { width: '35%', text: '    (подпись)', alignment: 'center', fontSize: 9, color: '#666' },
+              { width: '35%', text: '    (ФИО)', alignment: 'center', fontSize: 9, color: '#666' }
+            ],
+            margin: [0, 0, 0, 0]
+          }
+        ],
+        styles: {
+          tableHeader: {
+            bold: true,
+            fontSize: 10,
+            alignment: 'center'
+          },
+          tableCell: {
+            fontSize: 10,
+            alignment: 'center'
+          }
+        }
+      };
+
+      // Генерируем PDF
+      const fileName = isAllPassed 
+        ? `protocol_${serialNumber}_${formatDate(verificationDateObj)}.pdf`
+        : `protocol_${serialNumber}_${formatDate(verificationDateObj)}_rejected.pdf`;
+      
+      pdfMake.createPdf(docDefinition).download(fileName);
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Ошибка при создании PDF:', error);
+      alert('Ошибка при создании PDF. Проверьте консоль для деталей.');
+    }
+  };
+
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <button
+        onClick={generatePDF}
+        style={{
+          backgroundColor: '#28a745',
+          color: 'white',
+          padding: '12px 24px',
+          border: 'none',
+          borderRadius: '5px',
+          fontSize: '16px',
+          cursor: 'pointer',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          margin: '20px 0'
+        }}
+      >
+        <Download size={20} />
+        Сформировать протокол поверки
+      </button>
+    </div>
+  );
+}
+
+export default PDFGenerator;

@@ -1,0 +1,419 @@
+import React, { useState, useEffect } from 'react';
+
+function OperationsList({ device, currentData, diameter, onResultsChange, onMeasurementDataChange }) {
+  const [results, setResults] = useState({});
+  const [measurements, setMeasurements] = useState({});
+
+  // Берем операции из currentData (там где есть hasTable) или из device
+  const operations = currentData?.operations || device?.operations || [];
+
+  // Определяем, заблокирована ли операция
+  const isOperationDisabled = (operationOrder) => {
+    if (!operations.length) return false;
+    const previousOperations = operations.filter(op => op.order < operationOrder);
+    return previousOperations.some(op => results[op.name] === 'Не соответствует');
+  };
+
+  // Определяем, заблокирована ли таблица
+  const isTableDisabled = () => {
+    if (!operations.length) return false;
+    const measurementOperation = operations.find(op => op.hasTable === true);
+    if (!measurementOperation) return false;
+    
+    const previousOperations = operations.filter(op => op.order < measurementOperation.order);
+    return previousOperations.some(op => results[op.name] === 'Не соответствует');
+  };
+
+  // При выборе диаметра автоматически заполняем расходы и объемы для 3 точек
+  useEffect(() => {
+    if (diameter && currentData && currentData.diameters && currentData.diameters[diameter]) {
+      const diameterData = currentData.diameters[diameter];
+      
+      if (diameterData && diameterData.points && Array.isArray(diameterData.points)) {
+        const points = diameterData.points;
+        const newMeasurements = {};
+        
+        points.forEach((point, index) => {
+          if (point) {
+            const rowNum = index + 1;
+            
+            newMeasurements[`row_${rowNum}_col_1`] = point.flow ? point.flow.toString() : '';
+            
+            if (currentData.errorLimits && currentData.errorLimits[index]) {
+              newMeasurements[`row_${rowNum}_col_5`] = currentData.errorLimits[index];
+            } else {
+              newMeasurements[`row_${rowNum}_col_5`] = '2.00';
+            }
+            
+            if (point.volume) {
+              newMeasurements[`row_${rowNum}_volume`] = point.volume;
+            }
+          }
+        });
+        
+        setMeasurements(newMeasurements);
+        onMeasurementDataChange(newMeasurements);
+      }
+    }
+  }, [currentData, diameter, onMeasurementDataChange]);
+
+  // Функция для расчета относительной погрешности
+  const calculateError = (installValue, meterValue) => {
+    if (installValue && meterValue && parseFloat(installValue) !== 0) {
+      const install = parseFloat(installValue);
+      const meter = parseFloat(meterValue);
+      const error = ((meter - install) / install) * 100;
+      return error.toFixed(2);
+    }
+    return '';
+  };
+
+  // Функция для генерации значения в пределах допуска
+  const generateValueInRange = (baseValue, errorLimit, isGood) => {
+    if (!errorLimit) return baseValue;
+    
+    const limit = parseFloat(errorLimit.replace('±', ''));
+    
+    if (isGood) {
+      const percent = Math.random() * limit * 0.8;
+      return baseValue * (1 + (Math.random() > 0.5 ? percent / 100 : -percent / 100));
+    } else {
+      const multiplier = 1.1 + (Math.random() * 1.9);
+      const percent = limit * multiplier;
+      return baseValue * (1 + (Math.random() > 0.5 ? percent / 100 : -percent / 100));
+    }
+  };
+
+  const handleRandomFill = () => {
+    if (!diameter || !currentData || !currentData.diameters || !currentData.diameters[diameter]) {
+      alert('Сначала выберите диаметр');
+      return;
+    }
+
+    if (!operations.length) {
+      alert('Ошибка: нет данных об операциях');
+      return;
+    }
+
+    if (isTableDisabled()) {
+      alert('Невозможно сгенерировать значения: предыдущие операции не соответствуют');
+      return;
+    }
+
+    const measurementOp = operations.find(op => op.hasTable === true);
+    const isGood = results[measurementOp?.name] === 'Соответствует';
+    
+    const newMeasurements = { ...measurements };
+
+    for (let row = 1; row <= 3; row++) {
+      const flowVolume = parseFloat(newMeasurements[`row_${row}_volume`]) || 100;
+      const errorLimit = newMeasurements[`row_${row}_col_5`] || '2.00';
+      
+      const deviation = 1.001 + (Math.random() * 0.029);
+      const installValue = flowVolume * deviation;
+      newMeasurements[`row_${row}_col_2`] = installValue.toFixed(2);
+
+      const meterValue = generateValueInRange(installValue, errorLimit, isGood);
+      newMeasurements[`row_${row}_col_3`] = meterValue.toFixed(2);
+
+      const errorValue = calculateError(installValue.toFixed(2), meterValue.toFixed(2));
+      newMeasurements[`row_${row}_col_4`] = errorValue;
+    }
+
+    setMeasurements(newMeasurements);
+    onMeasurementDataChange(newMeasurements);
+  };
+
+  const handleOperationResult = (operationName, result) => {
+    const newResults = { ...results, [operationName]: result };
+    setResults(newResults);
+    onResultsChange(newResults);
+  };
+
+  const handleMeasurementChange = (rowIndex, colIndex, value) => {
+    const key = `row_${rowIndex}_col_${colIndex}`;
+    const newMeasurements = { ...measurements, [key]: value };
+    
+    if (colIndex === 2 || colIndex === 3) {
+      const installKey = `row_${rowIndex}_col_2`;
+      const meterKey = `row_${rowIndex}_col_3`;
+      const errorKey = `row_${rowIndex}_col_4`;
+      
+      const installValue = colIndex === 2 ? value : newMeasurements[installKey];
+      const meterValue = colIndex === 3 ? value : newMeasurements[meterKey];
+      
+      const errorValue = calculateError(installValue, meterValue);
+      if (errorValue) {
+        newMeasurements[errorKey] = errorValue;
+      }
+    }
+    
+    setMeasurements(newMeasurements);
+    onMeasurementDataChange(newMeasurements);
+  };
+
+  const getButtonStyle = (operationName, buttonType, isDisabled) => {
+    const isActive = results[operationName] === buttonType;
+    
+    if (isDisabled) {
+      return {
+        padding: '8px 16px',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'not-allowed',
+        backgroundColor: '#e9ecef',
+        color: '#adb5bd',
+        marginRight: '8px',
+        opacity: 0.6
+      };
+    }
+    
+    return {
+      padding: '8px 16px',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      backgroundColor: isActive 
+        ? (buttonType === 'Соответствует' ? '#28a745' : '#dc3545')
+        : (buttonType === 'Соответствует' ? '#d4edda' : '#f8d7da'),
+      color: isActive ? 'white' : (buttonType === 'Соответствует' ? '#155724' : '#721c24'),
+      marginRight: '8px'
+    };
+  };
+
+  // Функция для обрезания длинных названий
+  const shortenOperationName = (name) => {
+    if (name.length > 55) {
+      return name.substring(0, 52) + '...';
+    }
+    return name;
+  };
+
+  const tableRows = [1, 2, 3];
+  const tableDisabled = isTableDisabled();
+
+  return (
+    <div>
+      {operations.sort((a, b) => a.order - b.order).map((operation) => {
+        const disabled = isOperationDisabled(operation.order);
+        
+        return (
+          <div key={operation.order} style={{
+            border: '1px solid #ddd',
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '15px',
+            opacity: disabled ? 0.7 : 1,
+            backgroundColor: disabled ? '#f8f9fa' : 'white'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: '15px',
+              flexWrap: 'wrap',
+              gap: '12px'
+            }}>
+              <h3 style={{ 
+                margin: 0, 
+                fontSize: '16px',
+                fontWeight: 500,
+                flex: 1,
+                minWidth: '200px',
+                lineHeight: '1.4',
+                color: '#333'
+              }} title={operation.name}>
+                {shortenOperationName(operation.name)}
+              </h3>
+              <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                <button
+                  onClick={() => !disabled && handleOperationResult(operation.name, 'Соответствует')}
+                  style={getButtonStyle(operation.name, 'Соответствует', disabled)}
+                  disabled={disabled}
+                >
+                  ✓ Соответствует
+                </button>
+                <button
+                  onClick={() => !disabled && handleOperationResult(operation.name, 'Не соответствует')}
+                  style={getButtonStyle(operation.name, 'Не соответствует', disabled)}
+                  disabled={disabled}
+                >
+                  ✗ Не соответствует
+                </button>
+              </div>
+            </div>
+
+            {/* Таблица для метрологических характеристик - только для операций с hasTable: true */}
+            {operation.hasTable && (
+              <div style={{ marginTop: '15px' }}>
+                <h4 style={{ marginBottom: '10px' }}>Результаты измерений (3 точки):</h4>
+                
+                {!diameter && (
+                  <div style={{
+                    padding: '20px',
+                    backgroundColor: '#fff3cd',
+                    border: '1px solid #ffeeba',
+                    borderRadius: '4px',
+                    color: '#856404',
+                    textAlign: 'center',
+                    marginBottom: '15px'
+                  }}>
+                    ⚠️ Выберите диаметр для отображения расходов и объемов проливки
+                  </div>
+                )}
+
+                {tableDisabled && (
+                  <div style={{
+                    padding: '20px',
+                    backgroundColor: '#f8d7da',
+                    border: '1px solid #f5c6cb',
+                    borderRadius: '4px',
+                    color: '#721c24',
+                    textAlign: 'center',
+                    marginBottom: '15px'
+                  }}>
+                    ⚠️ Таблица недоступна: предыдущие операции не соответствуют
+                  </div>
+                )}
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    border: '1px solid #ddd',
+                    fontSize: '14px',
+                    opacity: tableDisabled ? 0.5 : 1
+                  }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8f9fa' }}>
+                        <th style={{ ...tableHeaderStyle, width: '5%' }}>№</th>
+                        <th style={{ ...tableHeaderStyle, width: '15%' }}>Расход, м³/ч</th>
+                        <th style={{ ...tableHeaderStyle, width: '20%' }}>Показания установки, л</th>
+                        <th style={{ ...tableHeaderStyle, width: '20%' }}>Показания счетчика</th>
+                        <th style={{ ...tableHeaderStyle, width: '20%' }}>Относительная погрешность, %</th>
+                        <th style={{ ...tableHeaderStyle, width: '20%' }}>Пределы допускаемой относительной погрешности, %</th>
+                       </tr>
+                    </thead>
+                    <tbody>
+                      {tableRows.map((rowNum, index) => (
+                        <tr key={rowNum} style={{ backgroundColor: index % 2 === 0 ? '#ffffff' : '#fafafa' }}>
+                          <td style={tableCellStyle}>{rowNum}</td>
+                          <td style={tableCellStyle}>
+                            <input
+                              type="text"
+                              value={measurements[`row_${rowNum}_col_1`] || ''}
+                              style={{...inputStyle, backgroundColor: '#f0f0f0', fontWeight: 'bold'}}
+                              readOnly
+                            />
+                          </td>
+                          <td style={tableCellStyle}>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={measurements[`row_${rowNum}_col_2`] || ''}
+                              onChange={(e) => !tableDisabled && handleMeasurementChange(rowNum, 2, e.target.value)}
+                              style={inputStyle}
+                              disabled={tableDisabled}
+                            />
+                          </td>
+                          <td style={tableCellStyle}>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={measurements[`row_${rowNum}_col_3`] || ''}
+                              onChange={(e) => !tableDisabled && handleMeasurementChange(rowNum, 3, e.target.value)}
+                              style={inputStyle}
+                              disabled={tableDisabled}
+                            />
+                          </td>
+                          <td style={tableCellStyle}>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={measurements[`row_${rowNum}_col_4`] || ''}
+                              onChange={(e) => !tableDisabled && handleMeasurementChange(rowNum, 4, e.target.value)}
+                              style={{...inputStyle, backgroundColor: '#ffffff', borderColor: '#007bff'}}
+                              disabled={tableDisabled}
+                            />
+                          </td>
+                          <td style={tableCellStyle}>
+                            <input
+                              type="text"
+                              value={measurements[`row_${rowNum}_col_5`] || ''}
+                              style={{...inputStyle, backgroundColor: '#f0f0f0', fontWeight: 'bold', color: '#d35400'}}
+                              readOnly
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Кнопка Сгенерировать значения под таблицей */}
+                {diameter && !tableDisabled && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    marginTop: '15px'
+                  }}>
+                    <button
+                      onClick={handleRandomFill}
+                      style={{
+                        backgroundColor: '#6c757d',
+                        color: 'white',
+                        padding: '10px 24px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '15px',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
+                    >
+                      Сгенерировать значения
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const tableHeaderStyle = {
+  border: '1px solid #ddd',
+  padding: '10px',
+  textAlign: 'center',
+  fontWeight: 'bold',
+  backgroundColor: '#f0f0f0'
+};
+
+const tableCellStyle = {
+  border: '1px solid #ddd',
+  padding: '8px',
+  textAlign: 'center'
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '6px',
+  border: '1px solid #ccc',
+  borderRadius: '4px',
+  fontSize: '13px',
+  textAlign: 'center',
+  boxSizing: 'border-box'
+};
+
+export default OperationsList;
