@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/protocol-app/static/css/main.ee30c968.css",
+    "main.js": "/protocol-app/static/js/main.01522c42.js",
+    "index.html": "/protocol-app/index.html",
+    "main.ee30c968.css.map": "/protocol-app/static/css/main.ee30c968.css.map",
+    "main.01522c42.js.map": "/protocol-app/static/js/main.01522c42.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ee30c968.css",
+    "static/js/main.01522c42.js"
+  ]
+}
