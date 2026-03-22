@@ -1,5 +1,8 @@
 import vsh from './vsh/vsh.json';
 import vshd from './vshd/vshd.json';
+import vsg from './vsg/vsg.json';
+import vsgd from './vsgd/vsgd.json'
+import vst from './vst/vst.json'
 
 const device = {
   id: "40607-09",
@@ -8,7 +11,10 @@ const device = {
   hasComposition: false,
   models: {
     vsh,
-    vshd
+    vshd,
+    vsg,
+    vsgd,
+    vst
   }
 };
 

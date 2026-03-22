@@ -4,24 +4,49 @@ function OperationsList({ device, currentData, diameter, onResultsChange, onMeas
   const [results, setResults] = useState({});
   const [measurements, setMeasurements] = useState({});
 
-  // Берем операции из currentData (там где есть hasTable) или из device
+  // Берем операции из currentData или device
   const operations = currentData?.operations || device?.operations || [];
 
+  // Инициализация результатов для disabled операций
+  useEffect(() => {
+    if (operations.length) {
+      const defaultResults = {};
+      operations.forEach(op => {
+        if (op.disabledByDefault) {
+          defaultResults[op.name] = 'Не проводилась';
+        }
+      });
+      if (Object.keys(defaultResults).length > 0) {
+        setResults(prev => ({ ...prev, ...defaultResults }));
+        onResultsChange({ ...results, ...defaultResults });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [operations, onResultsChange]);
+
   // Определяем, заблокирована ли операция
-  const isOperationDisabled = (operationOrder) => {
-    if (!operations.length) return false;
-    const previousOperations = operations.filter(op => op.order < operationOrder);
+  const isOperationDisabled = (operation) => {
+    // Если операция disabled по умолчанию
+    if (operation.disabledByDefault) return true;
+    
+    const previousOperations = operations.filter(op => op.order < operation.order);
     return previousOperations.some(op => results[op.name] === 'Не соответствует');
   };
 
   // Определяем, заблокирована ли таблица
   const isTableDisabled = () => {
     if (!operations.length) return false;
+    // Находим операцию с таблицей (hasTable: true)
     const measurementOperation = operations.find(op => op.hasTable === true);
     if (!measurementOperation) return false;
     
+    // Проверяем все операции ДО таблицы
     const previousOperations = operations.filter(op => op.order < measurementOperation.order);
-    return previousOperations.some(op => results[op.name] === 'Не соответствует');
+    return previousOperations.some(op => {
+      // Если операция disabledByDefault, она считается как "Не соответствует"
+      if (op.disabledByDefault) return true;
+      return results[op.name] === 'Не соответствует';
+    });
   };
 
   // При выборе диаметра автоматически заполняем расходы и объемы для 3 точек
@@ -195,7 +220,7 @@ function OperationsList({ device, currentData, diameter, onResultsChange, onMeas
   return (
     <div>
       {operations.sort((a, b) => a.order - b.order).map((operation) => {
-        const disabled = isOperationDisabled(operation.order);
+        const disabled = isOperationDisabled(operation);
         
         return (
           <div key={operation.order} style={{

@@ -36,7 +36,9 @@ function PDFGenerator({
       const operations = currentData?.operations || device?.operations || [];
       
       // Определяем годен/не годен (для заключения)
-      const isAllPassed = operations.length > 0 ? operations.every(op => 
+      // Исключаем операции с disabledByDefault из проверки
+      const activeOperations = operations.filter(op => !op.disabledByDefault);
+      const isAllPassed = activeOperations.length > 0 ? activeOperations.every(op => 
         operationsResults[op.name] === 'Соответствует'
       ) : false;
 
@@ -65,7 +67,7 @@ function PDFGenerator({
             { text: `${op.name}: `, bold: true },
             { text: result }
           ],
-          margin: [10, 3, 0, 0]
+          margin: [10, 2, 0, 0]
         });
       });
 
@@ -126,9 +128,21 @@ function PDFGenerator({
             },
             vLineColor: function(i) {
               return '#aaa';
+            },
+            paddingLeft: function(i) {
+              return 5;
+            },
+            paddingRight: function(i) {
+              return 5;
+            },
+            paddingTop: function(i) {
+              return 5;
+            },
+            paddingBottom: function(i) {
+              return 5;
             }
           },
-          margin: [20, 10, 20, 10]
+          margin: [20, 8, 20, 8]
         };
       }
 
@@ -140,9 +154,7 @@ function PDFGenerator({
         if (device.models && selectedModel) {
           const model = device.models[selectedModel];
           if (model) {
-            // Полное описание из госреестра
             name = device.name || "Счетчики холодной и горячей воды ВСХ, ВСХд, ВСГ, ВСГд, ВСТ.";
-            // Добавляем название модели
             const modelDisplay = model.displayName?.replace(' (холодная вода)', '') || model.name || selectedModel;
             name = `${name} ${modelDisplay}`;
           }
@@ -170,7 +182,6 @@ function PDFGenerator({
         // Добавляем диаметр
         if (diameter) {
           if (diameter.includes('-')) {
-            // Для формата "15-1.5" нужно получить displayName
             if (currentData && currentData.diameters && currentData.diameters[diameter]) {
               const diameterData = currentData.diameters[diameter];
               const diameterDisplay = diameterData.displayName || `ДУ-${diameter}`;
@@ -199,16 +210,15 @@ function PDFGenerator({
 
       // Функция для создания поля с жирным заголовком и курсивным значением
       const createFieldWithLine = (label, value) => {
-        // Проверяем, что value существует
         const safeValue = value || '—';
         const fullText = `${label} ${safeValue}`;
         
-        // Разбиваем текст на строки, которые помещаются по ширине
+        // Увеличиваем ширину строки (больше символов в строке)
+        const charsPerLine = Math.floor(contentWidth / 5.5);
+        
         const words = fullText.split(' ');
         const lines = [];
         let currentLine = '';
-        
-        const charsPerLine = Math.floor(contentWidth / 6);
         
         words.forEach(word => {
           const testLine = currentLine ? `${currentLine} ${word}` : word;
@@ -223,21 +233,17 @@ function PDFGenerator({
         
         const stackContent = [];
         
-        // Для каждой строки добавляем текст и линию под ней
         lines.forEach((line, index) => {
           if (index === 0) {
-            // Первая строка: жирный заголовок + значение
-            // Отделяем заголовок от значения
             const valuePart = line.substring(label.length).trim();
             stackContent.push({ 
               text: [
                 { text: label, bold: true },
                 { text: valuePart ? ' ' + valuePart : '', italics: true }
               ],
-              margin: [0, 3, 0, 1] 
+              margin: [0, 2, 0, 1] 
             });
           } else {
-            // Последующие строки: только значение (курсив)
             stackContent.push({ 
               text: line, 
               italics: true,
@@ -245,7 +251,6 @@ function PDFGenerator({
             });
           }
           
-          // Добавляем линию под каждой строкой
           stackContent.push({
             canvas: [
               {
@@ -263,7 +268,7 @@ function PDFGenerator({
         
         return {
           stack: stackContent,
-          margin: [0, 2, 0, 2]
+          margin: [0, 1, 0, 1]
         };
       };
 
@@ -274,22 +279,26 @@ function PDFGenerator({
               { width: '50%', text: `Дата поверки: ${formatDate(verificationDateObj)}`, alignment: 'left' },
               { width: '50%', text: `Дата следующей поверки: ${formatDate(nextDate)}`, alignment: 'right' }
             ],
-            margin: [0, 5, 0, 25]
+            margin: [0, 3, 0, 15]
           }
         : {
             text: `Дата поверки: ${formatDate(verificationDateObj)}`,
             alignment: 'left',
-            margin: [0, 5, 0, 25]
+            margin: [0, 3, 0, 15]
           };
 
       // Создаем структуру документа
       const docDefinition = {
         pageSize: 'A4',
-        pageMargins: [leftMargin, 40, rightMargin, 40],
+        pageMargins: [leftMargin, 30, rightMargin, 30],
+        defaultStyle: {
+          fontSize: 10,
+          lineHeight: 1.2
+        },
         content: [
           // 1. Шапка
-          { text: 'ООО «Нижегородский центр метрологии им. Профессора Т.Н. Праховой»', fontSize: 14, bold: true, alignment: 'center' },
-          { text: '606040, Нижегородская обл., г. Дзержинск, ул. Зеленая, д.10', fontSize: 10, alignment: 'center', margin: [0, 0, 0, 5] },
+          { text: 'ООО «Нижегородский центр метрологии им. Профессора Т.Н. Праховой»', fontSize: 13, bold: true, alignment: 'center' },
+          { text: '606040, Нижегородская обл., г. Дзержинск, ул. Зеленая, д.10', fontSize: 9, alignment: 'center', margin: [0, 0, 0, 3] },
           
           // 1.1 Жирная черта по центру
           {
@@ -300,25 +309,25 @@ function PDFGenerator({
                 y1: 0,
                 x2: contentWidth,
                 y2: 0,
-                lineWidth: 1.5,
+                lineWidth: 1,
                 lineColor: '#333333'
               }
             ],
             alignment: 'center',
-            margin: [0, 0, 0, 10]
+            margin: [0, 0, 0, 5]
           },
           
           // 2. Номер аккредитации по центру, курсивом
           { 
             text: 'Уникальный номер записи об аккредитации в реестре аккредитованных лиц RA.RU.314030', 
             italics: true,
-            fontSize: 10,
+            fontSize: 9,
             alignment: 'center',
-            margin: [0, 5, 0, 10]
+            margin: [0, 3, 0, 5]
           },
           
           // 3. Номер протокола
-          { text: `ПРОТОКОЛ ПОВЕРКИ ${protocolNumber}`, fontSize: 16, bold: true, alignment: 'center', margin: [0, 10, 0, 10] },
+          { text: `ПРОТОКОЛ ПОВЕРКИ ${protocolNumber}`, fontSize: 15, bold: true, alignment: 'center', margin: [0, 5, 0, 8] },
           
           // 4. Информация о приборе с жирными заголовками и курсивными значениями
           createFieldWithLine('Средство измерений:', deviceFullName),
@@ -328,25 +337,25 @@ function PDFGenerator({
           createFieldWithLine('С применением эталонов и рабочих СИ:', device.common?.standards || currentData?.standards || '—'),
           
           // Добавляем отступ после информации о приборе
-          { text: '', margin: [0, 10, 0, 0] },
+          { text: '', margin: [0, 5, 0, 0] },
           
           // 5. Заголовок влияющих факторов
-          { text: 'При следующих влияющих факторах:', bold: true, margin: [0, 5, 0, 5] },
+          { text: 'При следующих влияющих факторах:', bold: true, margin: [0, 5, 0, 3] },
           
           // 5.1 Влияющие факторы с серым фоном
           {
             stack: [
-              { text: 'Температура поверочной жидкости: ' + getRandomFactor(15.4, 18.9) + ' °C', margin: [10, 5, 0, 2] },
-              { text: 'Температура окружающего воздуха: ' + getRandomFactor(15.4, 22.2) + ' °C', margin: [10, 2, 0, 2] },
-              { text: 'Относительная влажность: ' + getRandomFactor(45.2, 50.8) + ' %', margin: [10, 2, 0, 2] },
-              { text: 'Атмосферное давление: ' + getRandomFactor(90.1, 102.7) + ' кПа', margin: [10, 2, 0, 5] }
+              { text: 'Температура поверочной жидкости: ' + getRandomFactor(15.4, 18.9) + ' °C', margin: [10, 3, 0, 1] },
+              { text: 'Температура окружающего воздуха: ' + getRandomFactor(15.4, 22.2) + ' °C', margin: [10, 1, 0, 1] },
+              { text: 'Относительная влажность: ' + getRandomFactor(45.2, 50.8) + ' %', margin: [10, 1, 0, 1] },
+              { text: 'Атмосферное давление: ' + getRandomFactor(90.1, 102.7) + ' кПа', margin: [10, 1, 0, 3] }
             ],
             background: '#f5f5f5',
-            margin: [0, 0, 0, 10]
+            margin: [0, 0, 0, 5]
           },
           
           // 6. Результаты поверки
-          { text: 'Результаты поверки', fontSize: 12, bold: true, margin: [0, 10, 0, 5] },
+          { text: 'Результаты поверки', fontSize: 11, bold: true, margin: [0, 5, 0, 3] },
           
           // 7. Операции поверки (название жирным, значение обычным)
           ...operationsList,
@@ -358,8 +367,8 @@ function PDFGenerator({
           { 
             text: `Заключение о пригодности: ${isAllPassed ? 'ГОДЕН' : 'НЕ ГОДЕН'}`,
             bold: true,
-            margin: [0, 15, 0, 5],
-            fontSize: 12,
+            margin: [0, 8, 0, 3],
+            fontSize: 11,
             color: isAllPassed ? 'green' : 'red'
           },
           
@@ -369,19 +378,19 @@ function PDFGenerator({
           // 11. Поверитель с линиями на одной строке
           {
             columns: [
-              { width: '30%', text: 'Поверитель:', alignment: 'left' },
-              { width: '35%', text: '____________________', alignment: 'center' },
-              { width: '35%', text: '____________________', alignment: 'center' }
+              { width: '25%', text: 'Поверитель:', alignment: 'left' },
+              { width: '37%', text: '__________________________', alignment: 'center' },
+              { width: '38%', text: '_______________________________', alignment: 'center' }
             ],
-            margin: [0, 10, 0, 5]
+            margin: [0, 25, 0, 3]
           },
           
           // 12. Подписи под линиями
           {
             columns: [
-              { width: '30%', text: '', alignment: 'left' },
-              { width: '35%', text: '    (подпись)', alignment: 'center', fontSize: 9, color: '#666' },
-              { width: '35%', text: '    (ФИО)', alignment: 'center', fontSize: 9, color: '#666' }
+              { width: '25%', text: '', alignment: 'left' },
+              { width: '37%', text: '    (подпись)', alignment: 'center', fontSize: 8, color: '#666' },
+              { width: '38%', text: '           (ФИО)', alignment: 'center', fontSize: 8, color: '#666' }
             ],
             margin: [0, 0, 0, 0]
           }
@@ -389,11 +398,11 @@ function PDFGenerator({
         styles: {
           tableHeader: {
             bold: true,
-            fontSize: 10,
+            fontSize: 9,
             alignment: 'center'
           },
           tableCell: {
-            fontSize: 10,
+            fontSize: 9,
             alignment: 'center'
           }
         }

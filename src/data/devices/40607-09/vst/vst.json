@@ -1,12 +1,12 @@
 {
-    "id": "40607-09-vshd",
-    "name": "ВСХд",
+    "id": "40607-09-vst",
+    "name": "ВСТ",
     "methodology": "МП 40607-09 'Счетчики холодной и горячей воды ВСХ, ВСХд, ВСГ, ВСГд, ВСТ. Методика поверки', согласованным ФГУП 'ВНИИМС' 11.02.2009 г.",
     "standards": "Спросить у Ани",
     "hasTypes": false,
     "hasClasses": false,
     "hasComposition": false,
-    "nextVerificationPeriod": 6,
+    "nextVerificationPeriod": 4,
     "errorLimits": ["5.0", "2.0", "2.0"],
     "diameters": {
       "15-0.6": {
@@ -49,8 +49,8 @@
         "displayName": "ДУ-25 мм",
         "unit": "м³/ч",
         "points": [
-          { "flow": 0.07, "volume": 5 },
-          { "flow": 0.28, "volume": 10 },
+          { "flow": 0.14, "volume": 10 },
+          { "flow": 0.35, "volume": 20 },
           { "flow": 3.5, "volume": 50 }
         ]
       },
@@ -58,8 +58,8 @@
         "displayName": "ДУ-32 мм",
         "unit": "м³/ч",
         "points": [
-          { "flow": 0.12, "volume": 10 },
-          { "flow": 0.48, "volume": 20 },
+          { "flow": 0.24, "volume": 25 },
+          { "flow": 0.6, "volume": 50 },
           { "flow": 6, "volume": 100 }
         ]
       },
@@ -67,8 +67,8 @@
         "displayName": "ДУ-40 мм",
         "unit": "м³/ч",
         "points": [
-          { "flow": 0.2, "volume": 25 },
-          { "flow": 0.8, "volume": 50 },
+          { "flow": 0.3, "volume": 50 },
+          { "flow": 1, "volume": 100 },
           { "flow": 10, "volume": 200 }
         ]
       }

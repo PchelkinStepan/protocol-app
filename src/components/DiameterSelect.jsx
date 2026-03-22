@@ -32,15 +32,28 @@ function DiameterSelect({ diameters, value, onChange }) {
     e.target.style.borderColor = '#e0e0e0';
   };
 
+  // Функция для получения числового значения из ключа диаметра
+  const getDiameterNumber = (key) => {
+    // Для ключей типа "15-0.6", "15-1", "15-1.5" - берем число до дефиса
+    if (key.includes('-')) {
+      return parseInt(key.split('-')[0], 10);
+    }
+    // Для простых ключей "15", "20", "25" и т.д.
+    return parseInt(key, 10);
+  };
+
   // Функция для получения отображаемого имени диаметра
   const getDiameterDisplayName = (key, diameterData) => {
-    // Если у диаметра есть displayName, показываем его
     if (diameterData.displayName) {
       return diameterData.displayName;
     }
-    // Иначе стандартное "ДУ {ключ} мм"
     return `ДУ ${key} мм`;
   };
+
+  // Сортируем ключи диаметров по числовому значению
+  const sortedDiameterKeys = Object.keys(diameters).sort((a, b) => {
+    return getDiameterNumber(a) - getDiameterNumber(b);
+  });
 
   return (
     <div>
@@ -55,9 +68,9 @@ function DiameterSelect({ diameters, value, onChange }) {
         style={selectStyle}
       >
         <option value="" disabled>Выберите диаметр</option>
-        {Object.entries(diameters).map(([key, data]) => (
+        {sortedDiameterKeys.map((key) => (
           <option key={key} value={key}>
-            {getDiameterDisplayName(key, data)}
+            {getDiameterDisplayName(key, diameters[key])}
           </option>
         ))}
       </select>
