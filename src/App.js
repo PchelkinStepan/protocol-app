@@ -171,6 +171,7 @@ function App() {
         {currentData && diameter && (
           <div style={cardStyle}>
             <PDFGenerator 
+              fullDevice={selectedDevice}
               device={currentModel}  // ← меняем с selectedDevice на currentModel
               currentData={currentData}
               serialNumber={serialNumber}

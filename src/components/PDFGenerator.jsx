@@ -9,6 +9,7 @@ if (pdfFonts) {
 }
 
 function PDFGenerator({ 
+  fullDevice,
   device, 
   currentData, 
   serialNumber, 
@@ -150,27 +151,29 @@ function PDFGenerator({
       const getFullDeviceName = () => {
         let name = '';
         
-        // Для приборов с моделями (40607-09)
-        if (device.models && selectedModel) {
-          const model = device.models[selectedModel];
+        // Для приборов с моделями (40607-09, 55115-13, 40606-09)
+        if (fullDevice?.models && selectedModel) {
+          const model = fullDevice.models[selectedModel];
           if (model) {
-            name = device.name || "Счетчики холодной и горячей воды ВСХ, ВСХд, ВСГ, ВСГд, ВСТ.";
-            const modelDisplay = model.displayName?.replace(' (холодная вода)', '') || model.name || selectedModel;
+            // Полное название из госреестра (fullDevice.name)
+            name = fullDevice.name || '';
+            // Добавляем название модели
+            const modelDisplay = model.displayName || model.name || selectedModel;
             name = `${name} ${modelDisplay}`;
           }
         }
         
         // Для приборов с типами (15820-07)
-        if (device.hasTypes && deviceType) {
-          const type = device.types[deviceType];
+        if (fullDevice?.hasTypes && deviceType) {
+          const type = fullDevice.types[deviceType];
           if (type) {
-            name = `${device.name} (${type.displayName})`;
+            name = `${fullDevice.name} (${type.displayName})`;
           }
         }
         
         // Если нет моделей и нет типов (простой прибор)
-        if (!device.models && !device.hasTypes) {
-          name = device.name;
+        if (!fullDevice?.models && !fullDevice?.hasTypes) {
+          name = fullDevice?.name;
         }
         
         // Добавляем класс, если есть

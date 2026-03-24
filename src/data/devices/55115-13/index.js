@@ -6,7 +6,7 @@ import vstn from './vstn/vstn.json';
 
 const device = {
   id: "55115-13",
-  name: "Счетчики холодной и горячей воды ВСХН, ВСХНд, ВСГН, ВСГНд, ВСТН",
+  name: "Счетчики воды крыльчатые ВСХН, ВСХНд, ВСГН, ВСГНд, ВСТН.",
   hasModels: true,
   hasComposition: false,
   models: {
