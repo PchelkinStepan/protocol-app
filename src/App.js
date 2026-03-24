@@ -54,16 +54,20 @@ function App() {
   const getCurrentDeviceData = () => {
     if (!selectedDevice) return null;
     
+    // Для приборов с models (40607-09, 55115-13)
     if (selectedDevice.models) {
       if (model && deviceClass) {
+        // Возвращаем класс (для 55115-13)
         return selectedDevice.models[model]?.classes[deviceClass];
       }
       if (model) {
+        // Возвращаем модель (для 40607-09)
         return selectedDevice.models[model];
       }
       return selectedDevice;
     }
     
+    // Для приборов с типами (15820-07)
     if (selectedDevice.hasTypes && deviceType) {
       return selectedDevice.types[deviceType];
     }
@@ -72,6 +76,17 @@ function App() {
   };
 
   const currentData = getCurrentDeviceData();
+
+  // Получаем модель для передачи в OperationsList и PDFGenerator
+  const getCurrentModel = () => {
+    if (!selectedDevice) return null;
+    if (selectedDevice.models && model) {
+      return selectedDevice.models[model];
+    }
+    return selectedDevice;
+  };
+
+  const currentModel = getCurrentModel();
 
   const appStyle = {
     minHeight: '100vh',
@@ -143,9 +158,10 @@ function App() {
           <div style={cardStyle}>
             <h2 style={{ fontSize: '24px', marginBottom: '15px' }}>Операции поверки</h2>
             <OperationsList 
-              device={selectedDevice}
-              currentData={currentData}
+              device={currentModel}  // ← передаём модель (у неё есть operations)
+              currentData={currentData}  // ← передаём класс или тип (у него есть diameters)
               diameter={diameter}
+              deviceClass={deviceClass}
               onResultsChange={setOperationsResults}
               onMeasurementDataChange={setMeasurementData}
             />
@@ -155,7 +171,7 @@ function App() {
         {currentData && diameter && (
           <div style={cardStyle}>
             <PDFGenerator 
-              device={selectedDevice}
+              device={currentModel}  // ← меняем с selectedDevice на currentModel
               currentData={currentData}
               serialNumber={serialNumber}
               diameter={diameter}

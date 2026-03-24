@@ -1,11 +1,31 @@
 import React, { useState, useEffect } from 'react';
 
-function OperationsList({ device, currentData, diameter, onResultsChange, onMeasurementDataChange }) {
+function OperationsList({ device, currentData, diameter, deviceClass, onResultsChange, onMeasurementDataChange }) {
+
+
+  
   const [results, setResults] = useState({});
   const [measurements, setMeasurements] = useState({});
 
-  // Берем операции из currentData или device
-  const operations = currentData?.operations || device?.operations || [];
+  // Универсальное получение операций
+  const getOperations = () => {
+    
+    // 1. Если у currentData есть операции (40607-09 - модели без классов)
+    if (currentData?.operations?.length > 0) {
+      return currentData.operations;
+    }
+    // 2. Если у device есть операции (55115-13 - модели с классами, операции на уровне модели)
+    if (device?.operations?.length > 0) {
+      return device.operations;
+    }
+    // 3. Если у currentData есть операции через device (15820-07 - типы)
+    if (currentData?.operations?.length > 0) {
+      return currentData.operations;
+    }
+    return [];
+  };
+
+  const operations = getOperations();
 
   // Инициализация результатов для disabled операций
   useEffect(() => {
@@ -317,7 +337,7 @@ function OperationsList({ device, currentData, diameter, onResultsChange, onMeas
                         <th style={{ ...tableHeaderStyle, width: '20%' }}>Показания счетчика</th>
                         <th style={{ ...tableHeaderStyle, width: '20%' }}>Относительная погрешность, %</th>
                         <th style={{ ...tableHeaderStyle, width: '20%' }}>Пределы допускаемой относительной погрешности, %</th>
-                       </tr>
+                      </tr>
                     </thead>
                     <tbody>
                       {tableRows.map((rowNum, index) => (

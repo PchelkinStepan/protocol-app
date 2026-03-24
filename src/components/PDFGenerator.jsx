@@ -175,7 +175,7 @@ function PDFGenerator({
         
         // Добавляем класс, если есть
         if (deviceClass) {
-          const classDisplay = deviceClass === 'classA' ? 'класс А' : 'класс В';
+          const classDisplay = deviceClass === 'classA' ? 'класс А' : (deviceClass === 'classB' ? 'класс В' : 'класс С');
           name = `${name} (${classDisplay})`;
         }
         
@@ -333,8 +333,8 @@ function PDFGenerator({
           createFieldWithLine('Средство измерений:', deviceFullName),
           createFieldWithLine('Заводской (серийный) номер:', serialNumber),
           createFieldWithLine('В составе:', compositionText),
-          createFieldWithLine('Поверено в соответствии с:', device.common?.methodology || currentData?.methodology || '—'),
-          createFieldWithLine('С применением эталонов и рабочих СИ:', device.common?.standards || currentData?.standards || '—'),
+          createFieldWithLine('Поверено в соответствии с:', device.common?.methodology || device?.methodology || currentData?.methodology || '—'),
+          createFieldWithLine('С применением эталонов и рабочих СИ:', device.common?.standards || device?.standards || currentData?.standards || '—'),
           
           // Добавляем отступ после информации о приборе
           { text: '', margin: [0, 5, 0, 0] },
