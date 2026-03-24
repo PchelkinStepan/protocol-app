@@ -1,4 +1,7 @@
 import vshn from './vshn/vshn.json';
+import vshnd from './vshnd/vshnd.json';
+import vsgn from './vsgn/vsgn.json'
+import vstn from './vstn/vstn.json'
 
 const device = {
   id: "40606-09",
@@ -6,7 +9,10 @@ const device = {
   hasModels: true,
   hasComposition: false,
   models: {
-    vshn
+    vshn,
+    vshnd,
+    vsgn,
+    vstn
   }
 };
 
