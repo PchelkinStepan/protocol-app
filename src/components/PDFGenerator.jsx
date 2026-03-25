@@ -80,6 +80,9 @@ function PDFGenerator({
       
       if (hasMeasurementData) {
         
+        // Получаем количество точек из данных
+        const pointsCount = Object.keys(measurementData).filter(key => key.includes('col_1')).length;
+        
         const tableBody = [
           [
             { text: '№', style: 'tableHeader' },
@@ -91,7 +94,7 @@ function PDFGenerator({
           ]
         ];
 
-        for (let row = 1; row <= 3; row++) {
+        for (let row = 1; row <= pointsCount; row++) {
           let errorLimit = measurementData[`row_${row}_col_5`] || '—';
           if (errorLimit !== '—') {
             errorLimit = errorLimit.replace('±', '');
@@ -151,7 +154,7 @@ function PDFGenerator({
       const getFullDeviceName = () => {
         let name = '';
         
-        // Для приборов с моделями (40607-09, 55115-13, 40606-09)
+        // Для приборов с моделями (40607-09, 55115-13, 40606-09, 45023-10)
         if (fullDevice?.models && selectedModel) {
           const model = fullDevice.models[selectedModel];
           if (model) {

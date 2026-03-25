@@ -1,31 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
 function OperationsList({ device, currentData, diameter, deviceClass, onResultsChange, onMeasurementDataChange }) {
-
-
-  
   const [results, setResults] = useState({});
   const [measurements, setMeasurements] = useState({});
 
-  // Универсальное получение операций
-  const getOperations = () => {
-    
-    // 1. Если у currentData есть операции (40607-09 - модели без классов)
-    if (currentData?.operations?.length > 0) {
-      return currentData.operations;
-    }
-    // 2. Если у device есть операции (55115-13 - модели с классами, операции на уровне модели)
-    if (device?.operations?.length > 0) {
-      return device.operations;
-    }
-    // 3. Если у currentData есть операции через device (15820-07 - типы)
-    if (currentData?.operations?.length > 0) {
-      return currentData.operations;
-    }
-    return [];
-  };
-
-  const operations = getOperations();
+  // Берем операции из device
+  const operations = device?.operations || [];
 
   // Инициализация результатов для disabled операций
   useEffect(() => {
@@ -46,7 +26,6 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
 
   // Определяем, заблокирована ли операция
   const isOperationDisabled = (operation) => {
-    // Если операция disabled по умолчанию
     if (operation.disabledByDefault) return true;
     
     const previousOperations = operations.filter(op => op.order < operation.order);
@@ -56,20 +35,17 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
   // Определяем, заблокирована ли таблица
   const isTableDisabled = () => {
     if (!operations.length) return false;
-    // Находим операцию с таблицей (hasTable: true)
     const measurementOperation = operations.find(op => op.hasTable === true);
     if (!measurementOperation) return false;
     
-    // Проверяем все операции ДО таблицы
     const previousOperations = operations.filter(op => op.order < measurementOperation.order);
     return previousOperations.some(op => {
-      // Если операция disabledByDefault, она считается как "Не соответствует"
       if (op.disabledByDefault) return true;
       return results[op.name] === 'Не соответствует';
     });
   };
 
-  // При выборе диаметра автоматически заполняем расходы и объемы для 3 точек
+  // При выборе диаметра автоматически заполняем расходы и объемы
   useEffect(() => {
     if (diameter && currentData && currentData.diameters && currentData.diameters[diameter]) {
       const diameterData = currentData.diameters[diameter];
@@ -79,20 +55,18 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
         const newMeasurements = {};
         
         points.forEach((point, index) => {
-          if (point) {
-            const rowNum = index + 1;
-            
-            newMeasurements[`row_${rowNum}_col_1`] = point.flow ? point.flow.toString() : '';
-            
-            if (currentData.errorLimits && currentData.errorLimits[index]) {
-              newMeasurements[`row_${rowNum}_col_5`] = currentData.errorLimits[index];
-            } else {
-              newMeasurements[`row_${rowNum}_col_5`] = '2.00';
-            }
-            
-            if (point.volume) {
-              newMeasurements[`row_${rowNum}_volume`] = point.volume;
-            }
+          const rowNum = index + 1;
+          
+          newMeasurements[`row_${rowNum}_col_1`] = point.flow ? point.flow.toString() : '';
+          
+          if (currentData.errorLimits && currentData.errorLimits[index]) {
+            newMeasurements[`row_${rowNum}_col_5`] = currentData.errorLimits[index];
+          } else {
+            newMeasurements[`row_${rowNum}_col_5`] = '2.00';
+          }
+          
+          if (point.volume) {
+            newMeasurements[`row_${rowNum}_volume`] = point.volume;
           }
         });
         
@@ -148,9 +122,12 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
     const measurementOp = operations.find(op => op.hasTable === true);
     const isGood = results[measurementOp?.name] === 'Соответствует';
     
+    const diameterData = currentData.diameters[diameter];
+    const pointsCount = diameterData.points?.length || 3;
+    
     const newMeasurements = { ...measurements };
 
-    for (let row = 1; row <= 3; row++) {
+    for (let row = 1; row <= pointsCount; row++) {
       const flowVolume = parseFloat(newMeasurements[`row_${row}_volume`]) || 100;
       const errorLimit = newMeasurements[`row_${row}_col_5`] || '2.00';
       
@@ -234,7 +211,16 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
     return name;
   };
 
-  const tableRows = [1, 2, 3];
+  // Получаем количество точек из выбранного диаметра
+  const getPointsCount = () => {
+    if (diameter && currentData?.diameters?.[diameter]?.points) {
+      return currentData.diameters[diameter].points.length;
+    }
+    return 3; // по умолчанию 3 точки
+  };
+
+  const pointsCount = getPointsCount();
+  const tableRows = Array.from({ length: pointsCount }, (_, i) => i + 1);
   const tableDisabled = isTableDisabled();
 
   return (
@@ -288,10 +274,10 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
               </div>
             </div>
 
-            {/* Таблица для метрологических характеристик - только для операций с hasTable: true */}
+            {/* Таблица для метрологических характеристик */}
             {operation.hasTable && (
               <div style={{ marginTop: '15px' }}>
-                <h4 style={{ marginBottom: '10px' }}>Результаты измерений (3 точки):</h4>
+                <h4 style={{ marginBottom: '10px' }}>Результаты измерений ({pointsCount} точки):</h4>
                 
                 {!diameter && (
                   <div style={{
@@ -337,7 +323,7 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
                         <th style={{ ...tableHeaderStyle, width: '20%' }}>Показания счетчика</th>
                         <th style={{ ...tableHeaderStyle, width: '20%' }}>Относительная погрешность, %</th>
                         <th style={{ ...tableHeaderStyle, width: '20%' }}>Пределы допускаемой относительной погрешности, %</th>
-                      </tr>
+                       </tr>
                     </thead>
                     <tbody>
                       {tableRows.map((rowNum, index) => (
