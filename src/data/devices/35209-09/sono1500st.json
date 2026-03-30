@@ -1,0 +1,128 @@
+{
+    "id": "35209-09-sono1500st",
+    "name": "SONO 1500 ST",
+    "displayName": "SONO 1500 ST",
+    "methodology": "МП 35209-09 'ГСИ. Расходомеры SONO 1500 ST. Методика поверки', утвержденная ФГУП 'ВНИИМС' в июне 2009 г. ",
+    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+    "hasTypes": false,
+    "hasClasses": false,
+    "hasComposition": false,
+    "nextVerificationPeriod": 4,
+    "errorLimits": ["2.0", "2.0"],
+    "diameters": {
+      "15-2.5": {
+        "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
+        "unit": "м³/ч",
+        "pulseWeight": 1,
+        "points": [
+          { "flow": 0.06, "volume": 5 },
+          { "flow": 0.95, "volume": 30 }
+        ]
+      },
+      "15-3.5": {
+        "displayName": "ДУ-15 мм (Qn=1.5 м³/ч)",
+        "unit": "м³/ч",
+        "pulseWeight": 1,
+        "points": [
+          { "flow": 0.17, "volume": 5 },
+          { "flow": 2.3, "volume": 30 }
+        ]
+      },
+      "20": {
+        "displayName": "ДУ-20 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 1,
+        "points": [
+          { "flow": 0.3, "volume": 10 },
+          { "flow": 4.1, "volume": 40 }
+        ]
+      },
+      "25": {
+        "displayName": "ДУ-25 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 10,
+        "points": [
+          { "flow": 0.7, "volume": 200 },
+          { "flow": 9.8, "volume": 1000 }
+        ]
+      },
+      "32": {
+        "displayName": "ДУ-32 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 10,
+        "points": [
+          { "flow": 0.7, "volume": 200 },
+          { "flow": 9.8, "volume": 1000 }
+        ]
+      },
+      "40": {
+        "displayName": "ДУ-40 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 10,
+        "points": [
+          { "flow": 0.8, "volume": 250 },
+          { "flow": 14.5, "volume": 1500 }
+        ]
+      },
+      "50": {
+        "displayName": "ДУ-50 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 10,
+        "points": [
+          { "flow": 1.9, "volume": 500 },
+          { "flow": 23.7, "volume": 2500 }
+        ]
+      },
+      "65": {
+        "displayName": "ДУ-65 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 10,
+        "points": [
+          { "flow": 3.2, "volume": 800 },
+          { "flow": 35, "volume": 3000 }
+        ]
+      },
+      "80": {
+        "displayName": "ДУ-80 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 100,
+        "points": [
+          { "flow": 5.5, "volume": 1000 },
+          { "flow": 65, "volume": 6000 }
+        ]
+      },
+      "100": {
+        "displayName": "ДУ-100 мм",
+        "unit": "м³/ч",
+        "pulseWeight": 100,
+        "points": [
+          { "flow": 8, "volume": 1500 },
+          { "flow": 105, "volume": 8000 }
+        ]
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр п. 7.1",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Проверка герметичности п. 7.2",
+        "type": "boolean",
+        "order": 2
+      },
+      {
+        "name": "Опробование п. 7.3",
+        "type": "boolean",
+        "order": 3
+      },
+      {
+        "name": "Определение относительной погрешности п. 7.4",
+        "type": "measurement",
+        "hasTable": true,
+        "tableType": "impulse",
+        "order": 4
+      }
+    ]
+  }

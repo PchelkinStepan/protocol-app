@@ -36,8 +36,12 @@ function PDFGenerator({
       // Берем операции из currentData или device
       const operations = currentData?.operations || device?.operations || [];
       
+      // Определяем тип таблицы
+      const measurementOperation = operations.find(op => op.hasTable === true);
+      const tableType = measurementOperation?.tableType || 'standard';
+      const isImpulseTable = tableType === 'impulse';
+      
       // Определяем годен/не годен (для заключения)
-      // Исключаем операции с disabledByDefault из проверки
       const activeOperations = operations.filter(op => !op.disabledByDefault);
       const isAllPassed = activeOperations.length > 0 ? activeOperations.every(op => 
         operationsResults[op.name] === 'Соответствует'
@@ -83,90 +87,162 @@ function PDFGenerator({
         // Получаем количество точек из данных
         const pointsCount = Object.keys(measurementData).filter(key => key.includes('col_1')).length;
         
-        const tableBody = [
-          [
-            { text: '№', style: 'tableHeader' },
-            { text: 'Расход, м³/ч', style: 'tableHeader' },
-            { text: 'Показания установки, л', style: 'tableHeader' },
-            { text: 'Показания счетчика', style: 'tableHeader' },
-            { text: 'Относительная погрешность, %', style: 'tableHeader' },
-            { text: 'Пределы допускаемой относительной погрешности, %', style: 'tableHeader' }
-          ]
-        ];
+        let tableBody;
+        
+        if (isImpulseTable) {
+          // Impulse таблица (8 столбцов)
+          tableBody = [
+            [
+              { text: '№', style: 'tableHeader' },
+              { text: 'Расход,\nм³/ч', style: 'tableHeader' },
+              { text: 'Показания\nустановки, л', style: 'tableHeader' },
+              { text: 'Показания\nсчетчика, л', style: 'tableHeader' },
+              { text: 'Вес\nимпульса', style: 'tableHeader' },
+              { text: 'Количество\nимпульсов', style: 'tableHeader' },
+              { text: 'Относительная\nпогрешность, %', style: 'tableHeader' },
+              { text: 'Пределы допускаемой\nотносительной\nпогрешности, %', style: 'tableHeader' }
+            ]
+          ];
 
-        for (let row = 1; row <= pointsCount; row++) {
-          let errorLimit = measurementData[`row_${row}_col_5`] || '—';
-          if (errorLimit !== '—') {
-            errorLimit = errorLimit.replace('±', '');
+          for (let row = 1; row <= pointsCount; row++) {
+            let errorLimit = measurementData[`row_${row}_col_7`] || '—';
+            if (errorLimit !== '—') {
+              errorLimit = errorLimit.replace('±', '');
+            }
+
+            const rowData = [
+              { text: row.toString(), style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_1`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_2`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_3`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_4`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_5`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_6`] || '—', style: 'tableCell' },
+              { text: errorLimit, style: 'tableCell' }
+            ];
+            tableBody.push(rowData);
           }
 
-          const rowData = [
-            { text: row.toString(), style: 'tableCell' },
-            { text: measurementData[`row_${row}_col_1`] || '—', style: 'tableCell' },
-            { text: measurementData[`row_${row}_col_2`] || '—', style: 'tableCell' },
-            { text: measurementData[`row_${row}_col_3`] || '—', style: 'tableCell' },
-            { text: measurementData[`row_${row}_col_4`] || '—', style: 'tableCell' },
-            { text: errorLimit, style: 'tableCell' }
+          measurementTable = {
+            table: {
+              headerRows: 1,
+              widths: ['5%', '10%', '12%', '12%', '10%', '12%', '15%', '24%'],
+              body: tableBody
+            },
+            layout: {
+              fillColor: function(rowIndex) {
+                return rowIndex === 0 ? '#f0f0f0' : null;
+              },
+              hLineWidth: function(i) {
+                return 0.5;
+              },
+              vLineWidth: function(i) {
+                return 0.5;
+              },
+              hLineColor: function(i) {
+                return '#aaa';
+              },
+              vLineColor: function(i) {
+                return '#aaa';
+              },
+              paddingLeft: function(i) {
+                return 5;
+              },
+              paddingRight: function(i) {
+                return 5;
+              },
+              paddingTop: function(i) {
+                return 5;
+              },
+              paddingBottom: function(i) {
+                return 5;
+              }
+            },
+            margin: [20, 8, 20, 8]
+          };
+        } else {
+          // Standard таблица (6 столбцов)
+          tableBody = [
+            [
+              { text: '№', style: 'tableHeader' },
+              { text: 'Расход,\nм³/ч', style: 'tableHeader' },
+              { text: 'Показания\nустановки, л', style: 'tableHeader' },
+              { text: 'Показания\nсчетчика', style: 'tableHeader' },
+              { text: 'Относительная\nпогрешность, %', style: 'tableHeader' },
+              { text: 'Пределы допускаемой\nотносительной\nпогрешности, %', style: 'tableHeader' }
+            ]
           ];
-          tableBody.push(rowData);
-        }
 
-        measurementTable = {
-          table: {
-            headerRows: 1,
-            widths: ['5%', '15%', '20%', '20%', '20%', '20%'],
-            body: tableBody
-          },
-          layout: {
-            fillColor: function(rowIndex) {
-              return rowIndex === 0 ? '#f0f0f0' : null;
-            },
-            hLineWidth: function(i) {
-              return 0.5;
-            },
-            vLineWidth: function(i) {
-              return 0.5;
-            },
-            hLineColor: function(i) {
-              return '#aaa';
-            },
-            vLineColor: function(i) {
-              return '#aaa';
-            },
-            paddingLeft: function(i) {
-              return 5;
-            },
-            paddingRight: function(i) {
-              return 5;
-            },
-            paddingTop: function(i) {
-              return 5;
-            },
-            paddingBottom: function(i) {
-              return 5;
+          for (let row = 1; row <= pointsCount; row++) {
+            let errorLimit = measurementData[`row_${row}_col_5`] || '—';
+            if (errorLimit !== '—') {
+              errorLimit = errorLimit.replace('±', '');
             }
-          },
-          margin: [20, 8, 20, 8]
-        };
+
+            const rowData = [
+              { text: row.toString(), style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_1`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_2`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_3`] || '—', style: 'tableCell' },
+              { text: measurementData[`row_${row}_col_4`] || '—', style: 'tableCell' },
+              { text: errorLimit, style: 'tableCell' }
+            ];
+            tableBody.push(rowData);
+          }
+
+          measurementTable = {
+            table: {
+              headerRows: 1,
+              widths: ['5%', '15%', '20%', '20%', '20%', '20%'],
+              body: tableBody
+            },
+            layout: {
+              fillColor: function(rowIndex) {
+                return rowIndex === 0 ? '#f0f0f0' : null;
+              },
+              hLineWidth: function(i) {
+                return 0.5;
+              },
+              vLineWidth: function(i) {
+                return 0.5;
+              },
+              hLineColor: function(i) {
+                return '#aaa';
+              },
+              vLineColor: function(i) {
+                return '#aaa';
+              },
+              paddingLeft: function(i) {
+                return 5;
+              },
+              paddingRight: function(i) {
+                return 5;
+              },
+              paddingTop: function(i) {
+                return 5;
+              },
+              paddingBottom: function(i) {
+                return 5;
+              }
+            },
+            margin: [20, 8, 20, 8]
+          };
+        }
       }
 
       // Формируем полное название прибора с учётом модели и класса
       const getFullDeviceName = () => {
         let name = '';
         
-        // Для приборов с моделями (40607-09, 55115-13, 40606-09, 45023-10)
         if (fullDevice?.models && selectedModel) {
           const model = fullDevice.models[selectedModel];
           if (model) {
-            // Полное название из госреестра (fullDevice.name)
             name = fullDevice.name || '';
-            // Добавляем название модели
             const modelDisplay = model.displayName || model.name || selectedModel;
             name = `${name} ${modelDisplay}`;
           }
         }
         
-        // Для приборов с типами (15820-07)
         if (fullDevice?.hasTypes && deviceType) {
           const type = fullDevice.types[deviceType];
           if (type) {
@@ -174,18 +250,15 @@ function PDFGenerator({
           }
         }
         
-        // Если нет моделей и нет типов (простой прибор)
         if (!fullDevice?.models && !fullDevice?.hasTypes) {
           name = fullDevice?.name;
         }
         
-        // Добавляем класс, если есть
         if (deviceClass) {
           const classDisplay = deviceClass === 'classA' ? 'класс А' : (deviceClass === 'classB' ? 'класс В' : 'класс С');
           name = `${name} (${classDisplay})`;
         }
         
-        // Добавляем диаметр
         if (diameter) {
           if (diameter.includes('-')) {
             if (currentData && currentData.diameters && currentData.diameters[diameter]) {
@@ -212,14 +285,13 @@ function PDFGenerator({
       const pageWidth = 595.28;
       const leftMargin = 40;
       const rightMargin = 40;
-      const contentWidth = pageWidth - leftMargin - rightMargin; // 515.28
+      const contentWidth = pageWidth - leftMargin - rightMargin;
 
       // Функция для создания поля с жирным заголовком и курсивным значением
       const createFieldWithLine = (label, value) => {
         const safeValue = value || '—';
         const fullText = `${label} ${safeValue}`;
         
-        // Увеличиваем ширину строки (больше символов в строке)
         const charsPerLine = Math.floor(contentWidth / 5.5);
         
         const words = fullText.split(' ');
@@ -302,11 +374,9 @@ function PDFGenerator({
           lineHeight: 1.2
         },
         content: [
-          // 1. Шапка
           { text: 'ООО «Нижегородский центр метрологии им. Профессора Т.Н. Праховой»', fontSize: 13, bold: true, alignment: 'center' },
           { text: '606040, Нижегородская обл., г. Дзержинск, ул. Зеленая, д.10', fontSize: 9, alignment: 'center', margin: [0, 0, 0, 3] },
           
-          // 1.1 Жирная черта по центру
           {
             canvas: [
               {
@@ -323,7 +393,6 @@ function PDFGenerator({
             margin: [0, 0, 0, 5]
           },
           
-          // 2. Номер аккредитации по центру, курсивом
           { 
             text: 'Уникальный номер записи об аккредитации в реестре аккредитованных лиц RA.RU.314030', 
             italics: true,
@@ -332,23 +401,18 @@ function PDFGenerator({
             margin: [0, 3, 0, 5]
           },
           
-          // 3. Номер протокола
           { text: `ПРОТОКОЛ ПОВЕРКИ ${protocolNumber}`, fontSize: 15, bold: true, alignment: 'center', margin: [0, 5, 0, 8] },
           
-          // 4. Информация о приборе с жирными заголовками и курсивными значениями
           createFieldWithLine('Средство измерений:', deviceFullName),
           createFieldWithLine('Заводской (серийный) номер:', serialNumber),
           createFieldWithLine('В составе:', compositionText),
           createFieldWithLine('Поверено в соответствии с:', device.common?.methodology || device?.methodology || currentData?.methodology || '—'),
           createFieldWithLine('С применением эталонов и рабочих СИ:', device.common?.standards || device?.standards || currentData?.standards || '—'),
           
-          // Добавляем отступ после информации о приборе
           { text: '', margin: [0, 5, 0, 0] },
           
-          // 5. Заголовок влияющих факторов
           { text: 'При следующих влияющих факторах:', bold: true, margin: [0, 5, 0, 3] },
           
-          // 5.1 Влияющие факторы с серым фоном
           {
             stack: [
               { text: 'Температура поверочной жидкости: ' + getRandomFactor(15.4, 18.9) + ' °C', margin: [10, 3, 0, 1] },
@@ -360,16 +424,12 @@ function PDFGenerator({
             margin: [0, 0, 0, 5]
           },
           
-          // 6. Результаты поверки
           { text: 'Результаты поверки', fontSize: 11, bold: true, margin: [0, 5, 0, 3] },
           
-          // 7. Операции поверки (название жирным, значение обычным)
           ...operationsList,
           
-          // 8. Таблица измерений
           ...(measurementTable ? [measurementTable] : []),
           
-          // 9. Заключение
           { 
             text: `Заключение о пригодности: ${isAllPassed ? 'ГОДЕН' : 'НЕ ГОДЕН'}`,
             bold: true,
@@ -378,10 +438,8 @@ function PDFGenerator({
             color: isAllPassed ? 'green' : 'red'
           },
           
-          // 10. Даты (меняются в зависимости от годности)
           datesContent,
           
-          // 11. Поверитель с линиями на одной строке
           {
             columns: [
               { width: '25%', text: 'Поверитель:', alignment: 'left' },
@@ -391,7 +449,6 @@ function PDFGenerator({
             margin: [0, 25, 0, 3]
           },
           
-          // 12. Подписи под линиями
           {
             columns: [
               { width: '25%', text: '', alignment: 'left' },

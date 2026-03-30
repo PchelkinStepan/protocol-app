@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import StandardTable from './tables/StandardTable';
+import ImpulseTable from './tables/ImpulseTable';
 
 function OperationsList({ device, currentData, diameter, deviceClass, onResultsChange, onMeasurementDataChange }) {
   const [results, setResults] = useState({});
   const [measurements, setMeasurements] = useState({});
 
-  // Берем операции из device
-  const operations = device?.operations || [];
+  // Берем операции из device и мемоизируем их
+  const operations = useMemo(() => device?.operations || [], [device]);
 
   // Инициализация результатов для disabled операций
   useEffect(() => {
@@ -36,12 +37,14 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
   // Определяем, заблокирована ли таблица
   const isTableDisabled = () => {
     if (!operations.length) return false;
+    
     const measurementOperation = operations.find(op => op.hasTable === true);
     if (!measurementOperation) return false;
     
     const previousOperations = operations.filter(op => op.order < measurementOperation.order);
+    
     return previousOperations.some(op => {
-      if (op.disabledByDefault) return true;
+      if (op.disabledByDefault) return false;
       return results[op.name] === 'Не соответствует';
     });
   };
@@ -55,19 +58,35 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
         const points = diameterData.points;
         const newMeasurements = {};
         
+        const measurementOperation = operations.find(op => op.hasTable === true);
+        const tableType = measurementOperation?.tableType || 'standard';
+        const isImpulseTable = tableType === 'impulse';
+        
         points.forEach((point, index) => {
           const rowNum = index + 1;
           
           newMeasurements[`row_${rowNum}_col_1`] = point.flow ? point.flow.toString() : '';
           
           if (currentData.errorLimits && currentData.errorLimits[index]) {
-            newMeasurements[`row_${rowNum}_col_5`] = currentData.errorLimits[index];
+            if (isImpulseTable) {
+              newMeasurements[`row_${rowNum}_col_7`] = currentData.errorLimits[index];
+            } else {
+              newMeasurements[`row_${rowNum}_col_5`] = currentData.errorLimits[index];
+            }
           } else {
-            newMeasurements[`row_${rowNum}_col_5`] = '2.00';
+            if (isImpulseTable) {
+              newMeasurements[`row_${rowNum}_col_7`] = '±2.00';
+            } else {
+              newMeasurements[`row_${rowNum}_col_5`] = '±2.00';
+            }
           }
           
           if (point.volume) {
             newMeasurements[`row_${rowNum}_volume`] = point.volume;
+          }
+          
+          if (isImpulseTable && diameterData.pulseWeight) {
+            newMeasurements[`row_${rowNum}_col_4`] = diameterData.pulseWeight.toString();
           }
         });
         
@@ -75,7 +94,7 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
         onMeasurementDataChange(newMeasurements);
       }
     }
-  }, [currentData, diameter, onMeasurementDataChange]);
+  }, [currentData, diameter, onMeasurementDataChange, operations]);
 
   // Функция для расчета относительной погрешности
   const calculateError = (installValue, meterValue) => {
@@ -109,40 +128,138 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
       alert('Сначала выберите диаметр');
       return;
     }
-
+  
     if (!operations.length) {
       alert('Ошибка: нет данных об операциях');
       return;
     }
-
+  
     if (isTableDisabled()) {
       alert('Невозможно сгенерировать значения: предыдущие операции не соответствуют');
       return;
     }
-
+  
     const measurementOp = operations.find(op => op.hasTable === true);
     const isGood = results[measurementOp?.name] === 'Соответствует';
+    const tableType = measurementOp?.tableType || 'standard';
+    const isImpulseTable = tableType === 'impulse';
     
     const diameterData = currentData.diameters[diameter];
     const pointsCount = diameterData.points?.length || 3;
     
     const newMeasurements = { ...measurements };
-
+    
+    // Массив для хранения результатов точек (для импульсной таблицы)
+    const pointResults = [];
+  
     for (let row = 1; row <= pointsCount; row++) {
-      const flowVolume = parseFloat(newMeasurements[`row_${row}_volume`]) || 100;
-      const errorLimit = newMeasurements[`row_${row}_col_5`] || '2.00';
+      const targetVolume = parseFloat(newMeasurements[`row_${row}_volume`]) || 100;
+      const errorLimitField = isImpulseTable ? `row_${row}_col_7` : `row_${row}_col_5`;
+      const errorLimit = newMeasurements[errorLimitField] || '2.00';
+      const limitValue = parseFloat(errorLimit.replace('±', ''));
       
-      const deviation = 1.001 + (Math.random() * 0.029);
-      const installValue = flowVolume * deviation;
-      newMeasurements[`row_${row}_col_2`] = installValue.toFixed(2);
-
-      const meterValue = generateValueInRange(installValue, errorLimit, isGood);
-      newMeasurements[`row_${row}_col_3`] = meterValue.toFixed(2);
-
-      const errorValue = calculateError(installValue.toFixed(2), meterValue.toFixed(2));
-      newMeasurements[`row_${row}_col_4`] = errorValue;
+      if (isImpulseTable) {
+        const pulseWeight = parseFloat(diameterData.pulseWeight) || 1;
+        
+        // 1. Показания счетчика = targetVolume + от 0.1% до 30%
+        const minMeter = targetVolume * 1.001;   // +0.1%
+        const maxMeter = targetVolume * 1.30;    // +30%
+        const meterVolume = minMeter + Math.random() * (maxMeter - minMeter);
+        
+        // 2. Количество импульсов = целая часть от показаний счетчика / вес импульса
+        const impulseCount = Math.floor(meterVolume / pulseWeight);
+        
+        // 3. Подбираем показания установки (эталон) с нужной погрешностью
+        let installValue;
+        let actualError;
+        
+        if (isGood) {
+          // Соответствует - погрешность не более ±2% для всех точек
+          const maxAllowedError = limitValue * 0.9;
+          const errorPercent = (Math.random() * 2 - 1) * maxAllowedError;
+          installValue = meterVolume / (1 + errorPercent / 100);
+          actualError = errorPercent;
+        } else {
+          // Не соответствует - 70% вероятность ошибки в каждой точке
+          // 30% точек будут в допуске
+          const makeError = Math.random() < 0.7;
+          
+          if (makeError) {
+            // Погрешность за пределами допуска
+            const minError = limitValue + 0.1;
+            const maxError = limitValue * 3;
+            const errorPercent = (Math.random() > 0.5 ? 1 : -1) * (minError + Math.random() * (maxError - minError));
+            installValue = meterVolume / (1 + errorPercent / 100);
+            actualError = errorPercent;
+          } else {
+            // Погрешность в пределах допуска
+            const maxAllowedError = limitValue * 0.9;
+            const errorPercent = (Math.random() * 2 - 1) * maxAllowedError;
+            installValue = meterVolume / (1 + errorPercent / 100);
+            actualError = errorPercent;
+          }
+        }
+        
+        newMeasurements[`row_${row}_col_2`] = installValue.toFixed(3);
+        newMeasurements[`row_${row}_col_3`] = meterVolume.toFixed(3);
+        newMeasurements[`row_${row}_col_4`] = pulseWeight.toString();
+        newMeasurements[`row_${row}_col_5`] = impulseCount.toString();
+        newMeasurements[`row_${row}_col_6`] = actualError.toFixed(2);
+        
+        // Сохраняем результат точки
+        pointResults.push({
+          row,
+          actualError: actualError,
+          isError: Math.abs(actualError) > limitValue
+        });
+        
+      } else {
+        // Стандартная таблица (6 столбцов)
+        const deviation = 1.001 + (Math.random() * 0.029);
+        const installValue = targetVolume * deviation;
+        newMeasurements[`row_${row}_col_2`] = installValue.toFixed(2);
+        
+        const meterValue = generateValueInRange(installValue, errorLimit, isGood);
+        newMeasurements[`row_${row}_col_3`] = meterValue.toFixed(2);
+        
+        const errorValue = calculateError(installValue.toFixed(2), meterValue.toFixed(2));
+        newMeasurements[`row_${row}_col_4`] = errorValue;
+      }
     }
-
+    
+    // Для импульсной таблицы и "Не соответствует" - проверяем, есть ли хотя бы одна точка с ошибкой
+    if (isImpulseTable && !isGood) {
+      const hasAnyError = pointResults.some(p => p.isError);
+      
+      // Если нет ни одной точки с ошибкой - перегенерируем последнюю точку с ошибкой
+      if (!hasAnyError && pointResults.length > 0) {
+        const lastRow = pointsCount;
+        const targetVolume = parseFloat(newMeasurements[`row_${lastRow}_volume`]) || 100;
+        const errorLimit = newMeasurements[`row_${lastRow}_col_7`] || '2.00';
+        const limitValue = parseFloat(errorLimit.replace('±', ''));
+        const pulseWeight = parseFloat(diameterData.pulseWeight) || 1;
+        
+        // Перегенерируем последнюю точку с ошибкой
+        const minMeter = targetVolume * 1.001;
+        const maxMeter = targetVolume * 1.30;
+        const meterVolume = minMeter + Math.random() * (maxMeter - minMeter);
+        const impulseCount = Math.floor(meterVolume / pulseWeight);
+        
+        // Генерируем погрешность за пределами допуска
+        const minError = limitValue + 0.1;
+        const maxError = limitValue * 3;
+        const errorPercent = (Math.random() > 0.5 ? 1 : -1) * (minError + Math.random() * (maxError - minError));
+        const installValue = meterVolume / (1 + errorPercent / 100);
+        const actualError = errorPercent;
+        
+        newMeasurements[`row_${lastRow}_col_2`] = installValue.toFixed(3);
+        newMeasurements[`row_${lastRow}_col_3`] = meterVolume.toFixed(3);
+        newMeasurements[`row_${lastRow}_col_4`] = pulseWeight.toString();
+        newMeasurements[`row_${lastRow}_col_5`] = impulseCount.toString();
+        newMeasurements[`row_${lastRow}_col_6`] = actualError.toFixed(2);
+      }
+    }
+  
     setMeasurements(newMeasurements);
     onMeasurementDataChange(newMeasurements);
   };
@@ -157,17 +274,67 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
     const key = `row_${rowIndex}_col_${colIndex}`;
     const newMeasurements = { ...measurements, [key]: value };
     
-    if (colIndex === 2 || colIndex === 3) {
+    const measurementOp = operations.find(op => op.hasTable === true);
+    const tableType = measurementOp?.tableType || 'standard';
+    const isImpulseTable = tableType === 'impulse';
+    
+    if (isImpulseTable) {
       const installKey = `row_${rowIndex}_col_2`;
-      const meterKey = `row_${rowIndex}_col_3`;
-      const errorKey = `row_${rowIndex}_col_4`;
+      const pulseWeightKey = `row_${rowIndex}_col_4`;
+      const impulseCountKey = `row_${rowIndex}_col_5`;
+      const errorKey = `row_${rowIndex}_col_6`;
       
-      const installValue = colIndex === 2 ? value : newMeasurements[installKey];
-      const meterValue = colIndex === 3 ? value : newMeasurements[meterKey];
+      const installVolume = parseFloat(newMeasurements[installKey]);
+      const pulseWeight = parseFloat(newMeasurements[pulseWeightKey]);
+      const impulseCount = parseFloat(newMeasurements[impulseCountKey]);
       
-      const errorValue = calculateError(installValue, meterValue);
-      if (errorValue) {
-        newMeasurements[errorKey] = errorValue;
+      if (installVolume && !isNaN(installVolume) && impulseCount && !isNaN(impulseCount) && pulseWeight && !isNaN(pulseWeight)) {
+        const meterVolume = impulseCount * pulseWeight;
+        const errorValue = ((meterVolume - installVolume) / installVolume) * 100;
+        newMeasurements[errorKey] = errorValue.toFixed(2);
+        newMeasurements[`row_${rowIndex}_col_3`] = meterVolume.toFixed(2);
+      }
+      
+      if (colIndex === 2 || colIndex === 4) {
+        const currentImpulseCount = parseFloat(newMeasurements[impulseCountKey]);
+        if (currentImpulseCount && !isNaN(currentImpulseCount)) {
+          const currentPulseWeight = parseFloat(newMeasurements[pulseWeightKey]);
+          const currentInstallVolume = parseFloat(newMeasurements[installKey]);
+          
+          if (currentPulseWeight && currentInstallVolume) {
+            const meterVolume = currentImpulseCount * currentPulseWeight;
+            const errorValue = ((meterVolume - currentInstallVolume) / currentInstallVolume) * 100;
+            newMeasurements[errorKey] = errorValue.toFixed(2);
+            newMeasurements[`row_${rowIndex}_col_3`] = meterVolume.toFixed(2);
+          }
+        }
+      }
+      
+      if (colIndex === 5) {
+        const currentPulseWeight = parseFloat(newMeasurements[pulseWeightKey]);
+        const currentInstallVolume = parseFloat(newMeasurements[installKey]);
+        const currentImpulseCount = parseFloat(value);
+        
+        if (currentPulseWeight && currentInstallVolume && currentImpulseCount && !isNaN(currentImpulseCount)) {
+          const meterVolume = currentImpulseCount * currentPulseWeight;
+          const errorValue = ((meterVolume - currentInstallVolume) / currentInstallVolume) * 100;
+          newMeasurements[errorKey] = errorValue.toFixed(2);
+          newMeasurements[`row_${rowIndex}_col_3`] = meterVolume.toFixed(2);
+        }
+      }
+      
+    } else {
+      if (colIndex === 2 || colIndex === 3) {
+        const installKey = `row_${rowIndex}_col_2`;
+        const meterKey = `row_${rowIndex}_col_3`;
+        
+        const installValue = colIndex === 2 ? value : newMeasurements[installKey];
+        const meterValue = colIndex === 3 ? value : newMeasurements[meterKey];
+        
+        const errorValue = calculateError(installValue, meterValue);
+        if (errorValue) {
+          newMeasurements[`row_${rowIndex}_col_4`] = errorValue;
+        }
       }
     }
     
@@ -204,7 +371,6 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
     };
   };
 
-  // Функция для обрезания длинных названий
   const shortenOperationName = (name) => {
     if (name.length > 55) {
       return name.substring(0, 52) + '...';
@@ -212,17 +378,19 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
     return name;
   };
 
-  // Получаем количество точек из выбранного диаметра
   const getPointsCount = () => {
     if (diameter && currentData?.diameters?.[diameter]?.points) {
       return currentData.diameters[diameter].points.length;
     }
-    return 3; // по умолчанию 3 точки
+    return 0;
   };
 
   const pointsCount = getPointsCount();
-  const tableRows = Array.from({ length: pointsCount }, (_, i) => i + 1);
+  const tableRows = pointsCount > 0 ? Array.from({ length: pointsCount }, (_, i) => i + 1) : [];
   const tableDisabled = isTableDisabled();
+
+  const measurementOperation = operations.find(op => op.hasTable === true);
+  const tableType = measurementOperation?.tableType || 'standard';
 
   return (
     <div>
@@ -275,21 +443,45 @@ function OperationsList({ device, currentData, diameter, deviceClass, onResultsC
               </div>
             </div>
 
-            {/* Таблица для метрологических характеристик */}
             {operation.hasTable && (
               <div style={{ marginTop: '15px' }}>
-                <h4 style={{ marginBottom: '10px' }}>Результаты измерений ({pointsCount} точки):</h4>
+                <h4 style={{ marginBottom: '10px' }}>
+                  Результаты измерений {pointsCount > 0 ? `(${pointsCount} точки):` : ':'}
+                </h4>
                 
-                <StandardTable 
-                  tableRows={tableRows}
-                  measurements={measurements}
-                  tableDisabled={tableDisabled}
-                  handleMeasurementChange={handleMeasurementChange}
-                  diameter={diameter}
-                />
+                {pointsCount > 0 ? (
+                  tableType === 'impulse' ? (
+                    <ImpulseTable 
+                      tableRows={tableRows}
+                      measurements={measurements}
+                      tableDisabled={tableDisabled}
+                      handleMeasurementChange={handleMeasurementChange}
+                      diameter={diameter}
+                    />
+                  ) : (
+                    <StandardTable 
+                      tableRows={tableRows}
+                      measurements={measurements}
+                      tableDisabled={tableDisabled}
+                      handleMeasurementChange={handleMeasurementChange}
+                      diameter={diameter}
+                    />
+                  )
+                ) : (
+                  <div style={{
+                    padding: '20px',
+                    backgroundColor: '#fff3cd',
+                    border: '1px solid #ffeeba',
+                    borderRadius: '4px',
+                    color: '#856404',
+                    textAlign: 'center',
+                    marginBottom: '15px'
+                  }}>
+                    ⚠️ Выберите диаметр для отображения таблицы измерений
+                  </div>
+                )}
                 
-                {/* Кнопка Сгенерировать значения под таблицей */}
-                {diameter && !tableDisabled && (
+                {diameter && pointsCount > 0 && !tableDisabled && (
                   <div style={{
                     display: 'flex',
                     justifyContent: 'flex-end',
