@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DeviceSearch from './components/DeviceSearch';
 import DeviceInfo from './components/DeviceInfo';
 import OperationsList from './components/OperationsList';
@@ -17,6 +17,19 @@ function App() {
   const [protocolNumber, setProtocolNumber] = useState('№П-____.___-____');
   const [verificationDate, setVerificationDate] = useState(null);
   const [manualDate, setManualDate] = useState(false);
+  
+  // Состояния для радио
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentStation, setCurrentStation] = useState(0);
+  const audioRef = useRef(null);
+  
+  const stations = [
+    { name: 'Европа Плюс', url: 'https://ep256.hostingradio.ru:8052/europaplus256.mp3' },
+    { name: 'Радио Рекорд', url: 'https://radiorecord.hostingradio.ru/rr_main96.aacp' },
+    { name: 'Наше Радио', url: 'https://nashe1.hostingradio.ru/nashe-256' },
+    { name: 'DFM', url: 'https://dfm.hostingradio.ru/dfm96.aacp' },
+    { name: 'Love Radio', url: 'https://love.hostingradio.ru/love96.aacp' }
+  ];
 
   useEffect(() => {
     setDeviceType('');
@@ -36,6 +49,32 @@ function App() {
     setDiameter('');
   }, [deviceClass]);
 
+  // Управление радио
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const changeStation = (index) => {
+    setCurrentStation(index);
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.load();
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.play();
+          setIsPlaying(true);
+        }
+      }, 100);
+    }
+  };
+
   const handleSearchChange = () => {
     setSelectedDevice(null);
     setDeviceType('');
@@ -54,20 +93,16 @@ function App() {
   const getCurrentDeviceData = () => {
     if (!selectedDevice) return null;
     
-    // Для приборов с models (40607-09, 55115-13)
     if (selectedDevice.models) {
       if (model && deviceClass) {
-        // Возвращаем класс (для 55115-13)
         return selectedDevice.models[model]?.classes[deviceClass];
       }
       if (model) {
-        // Возвращаем модель (для 40607-09)
         return selectedDevice.models[model];
       }
       return selectedDevice;
     }
     
-    // Для приборов с типами (15820-07)
     if (selectedDevice.hasTypes && deviceType) {
       return selectedDevice.types[deviceType];
     }
@@ -77,7 +112,6 @@ function App() {
 
   const currentData = getCurrentDeviceData();
 
-  // Получаем модель для передачи в OperationsList и PDFGenerator
   const getCurrentModel = () => {
     if (!selectedDevice) return null;
     if (selectedDevice.models && model) {
@@ -115,9 +149,72 @@ function App() {
     marginBottom: '20px'
   };
 
+  const radioStyle = {
+    backgroundColor: '#1a1a2e',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '15px',
+    color: 'white'
+  };
+
+  const stationButtonStyle = (isActive) => ({
+    backgroundColor: isActive ? '#e94560' : '#0f3460',
+    color: 'white',
+    border: 'none',
+    padding: '6px 12px',
+    borderRadius: '20px',
+    cursor: 'pointer',
+    fontSize: '12px',
+    margin: '0 4px 4px 0',
+    transition: 'all 0.2s'
+  });
+
+  const playButtonStyle = {
+    backgroundColor: '#e94560',
+    color: 'white',
+    border: 'none',
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    cursor: 'pointer',
+    fontSize: '18px',
+    marginRight: '15px'
+  };
+
   return (
     <div style={appStyle}>
       <div style={containerStyle}>
+        {/* Радио плеер */}
+        <div style={radioStyle}>
+          <audio
+            ref={audioRef}
+            src={stations[currentStation].url}
+            onEnded={() => setIsPlaying(false)}
+            onError={() => setIsPlaying(false)}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button onClick={togglePlay} style={playButtonStyle}>
+              {isPlaying ? '⏸' : '▶'}
+            </button>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                {stations[currentStation].name}
+              </div>
+              <div>
+                {stations.map((station, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => changeStation(idx)}
+                    style={stationButtonStyle(currentStation === idx)}
+                  >
+                    {station.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         <h1 style={headerStyle}>
           Протокол поверки СИ
         </h1>
@@ -158,8 +255,8 @@ function App() {
           <div style={cardStyle}>
             <h2 style={{ fontSize: '24px', marginBottom: '15px' }}>Операции поверки</h2>
             <OperationsList 
-              device={currentModel}  // ← передаём модель (у неё есть operations)
-              currentData={currentData}  // ← передаём класс или тип (у него есть diameters)
+              device={currentModel}
+              currentData={currentData}
               diameter={diameter}
               deviceClass={deviceClass}
               onResultsChange={setOperationsResults}
@@ -172,7 +269,7 @@ function App() {
           <div style={cardStyle}>
             <PDFGenerator 
               fullDevice={selectedDevice}
-              device={currentModel}  // ← меняем с selectedDevice на currentModel
+              device={currentModel}
               currentData={currentData}
               serialNumber={serialNumber}
               diameter={diameter}
