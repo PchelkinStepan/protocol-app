@@ -368,7 +368,7 @@ function PDFGenerator({
       // Создаем структуру документа
       const docDefinition = {
         pageSize: 'A4',
-        pageMargins: [leftMargin, 30, rightMargin, 30],
+        pageMargins: [leftMargin, 20, rightMargin, 20],  // ИЗМЕНЕНО: было 30
         defaultStyle: {
           fontSize: 10,
           lineHeight: 1.2
@@ -404,6 +404,7 @@ function PDFGenerator({
           { text: `ПРОТОКОЛ ПОВЕРКИ ${protocolNumber}`, fontSize: 15, bold: true, alignment: 'center', margin: [0, 5, 0, 8] },
           
           createFieldWithLine('Средство измерений:', deviceFullName),
+          createFieldWithLine('Номер в государственном реестре средств измерений:', fullDevice?.id || '—'),
           createFieldWithLine('Заводской (серийный) номер:', serialNumber),
           createFieldWithLine('В составе:', compositionText),
           createFieldWithLine('Поверено в соответствии с:', device.common?.methodology || device?.methodology || currentData?.methodology || '—'),
@@ -433,7 +434,7 @@ function PDFGenerator({
           { 
             text: `Заключение о пригодности: ${isAllPassed ? 'ГОДЕН' : 'НЕ ГОДЕН'}`,
             bold: true,
-            margin: [0, 8, 0, 3],
+            margin: [0, 5, 0, 2],  // ИЗМЕНЕНО: было 8 и 3
             fontSize: 11,
             color: isAllPassed ? 'green' : 'red'
           },
@@ -446,7 +447,7 @@ function PDFGenerator({
               { width: '37%', text: '__________________________', alignment: 'center' },
               { width: '38%', text: '_______________________________', alignment: 'center' }
             ],
-            margin: [0, 25, 0, 3]
+            margin: [0, 15, 0, 2],  // ИЗМЕНЕНО: было 25 и 3
           },
           
           {
