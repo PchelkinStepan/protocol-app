@@ -29,7 +29,6 @@ function DeviceInfo({
   setManualDate
 }) {
 
-  // Все хуки ДО проверки на device
   useEffect(() => {
     setDeviceClass('');
     setDiameter('');
@@ -38,6 +37,11 @@ function DeviceInfo({
   useEffect(() => {
     setDiameter('');
   }, [deviceClass, setDiameter]);
+
+  useEffect(() => {
+    setDeviceClass('');
+    setDiameter('');
+  }, [deviceType, setDeviceClass, setDiameter]);
 
   if (!device) return null;
 
@@ -75,30 +79,55 @@ function DeviceInfo({
     height: '16px'
   };
 
-  // Определяем, есть ли состав у прибора (на уровне госреестра)
   const hasComposition = device?.hasComposition || false;
 
   // Получаем текущую модель
   const currentModel = model && device.models ? device.models[model] : null;
   
-  // Получаем текущий класс
-  const currentClass = deviceClass && currentModel?.classes ? currentModel.classes[deviceClass] : null;
+  // Получаем текущий тип (из модели)
+  const currentType = deviceType && currentModel?.hasTypes && currentModel?.types 
+    ? currentModel.types[deviceType] 
+    : null;
+  
+  // Получаем текущий класс:
+  // 1. Если у типа есть classes (WPH-ZF)
+  // 2. Если у модели есть classes (55115-13)
+  const currentClass = (() => {
+    if (currentType?.classes && deviceClass) {
+      return currentType.classes[deviceClass];
+    }
+    if (currentModel?.classes && deviceClass) {
+      return currentModel.classes[deviceClass];
+    }
+    return null;
+  })();
 
   // Определяем, какие данные показывать для диаметров
-  const diametersForSelect = currentClass?.diameters || currentModel?.diameters || currentData?.diameters || null;
+  const getDiametersForSelect = () => {
+    if (currentClass?.diameters) return currentClass.diameters;
+    if (currentType?.diameters) return currentType.diameters;
+    if (currentModel?.diameters) return currentModel.diameters;
+    if (currentData?.diameters) return currentData.diameters;
+    return null;
+  };
+
+  const diametersForSelect = getDiametersForSelect();
+  
+  // Показывать ли выбор типа (если у модели есть hasTypes)
+  const showTypeSelect = currentModel?.hasTypes && currentModel.types;
+  
+  // Показывать ли выбор класса:
+  // 1. Если у типа есть classes (WPH-ZF)
+  // 2. Если у модели есть classes (55115-13)
+  const showClassSelect = (currentType?.classes && Object.keys(currentType.classes).length > 0) ||
+                          (currentModel?.hasClasses && currentModel.classes);
+  
+  // Классы для селекта
+  const classesForSelect = currentType?.classes || (currentModel?.hasClasses ? currentModel.classes : null);
 
   return (
     <div>
-      {/* Выбор типа прибора (если есть) - для WP-Dynamic */}
-      {device.hasTypes && device.types && !device.models && (
-        <DeviceTypeSelect 
-          types={device.types}
-          value={deviceType}
-          onChange={setDeviceType}
-        />
-      )}
-
-      {/* Выбор модели прибора (если есть) - для 40607-09 */}
+      {/* Выбор модели прибора (если есть) */}
       {device.models && (
         <ModelSelect 
           models={device.models}
@@ -107,16 +136,25 @@ function DeviceInfo({
         />
       )}
 
-      {/* Выбор класса прибора (если есть у модели) */}
-      {currentModel?.hasClasses && currentModel.classes && (
+      {/* Выбор типа (если у модели есть hasTypes) */}
+      {showTypeSelect && (
+        <DeviceTypeSelect 
+          types={currentModel.types}
+          value={deviceType}
+          onChange={setDeviceType}
+        />
+      )}
+
+      {/* Выбор класса (если есть) */}
+      {showClassSelect && classesForSelect && (
         <ClassSelect 
-          classes={currentModel.classes}
+          classes={classesForSelect}
           value={deviceClass}
           onChange={setDeviceClass}
         />
       )}
 
-      {/* Диаметр ДУ */}
+      {/* Диаметр */}
       {diametersForSelect && (
         <div style={{ marginBottom: '20px' }}>
           <DiameterSelect 
@@ -152,22 +190,10 @@ function DeviceInfo({
           type="text"
           value={composition}
           onChange={(e) => hasComposition && setComposition(e.target.value)}
-          placeholder={hasComposition ? "Введите состав (например: Теплосчетчик, датчик давления, датчик температуры)" : "Состав отсутствует для данного прибора"}
+          placeholder={hasComposition ? "Введите состав" : "Состав отсутствует"}
           style={hasComposition ? inputStyle : disabledInputStyle}
           disabled={!hasComposition}
-          onFocus={(e) => hasComposition && (e.target.style.borderColor = '#007bff')}
-          onBlur={(e) => hasComposition && (e.target.style.borderColor = '#e0e0e0')}
         />
-        {!hasComposition && (
-          <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
-            ⚠️ Для данного прибора состав не предусмотрен
-          </div>
-        )}
-        {hasComposition && (
-          <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
-            Укажите состав комплекса (если есть)
-          </div>
-        )}
       </div>
 
       {/* Номер протокола */}
@@ -197,7 +223,6 @@ function DeviceInfo({
         </label>
       </div>
 
-      {/* Дата поверки */}
       <div style={{ marginBottom: '20px' }}>
         <DatePicker
           label="Дата поверки"
@@ -205,11 +230,6 @@ function DeviceInfo({
           onChange={setVerificationDate}
           disabled={!manualDate}
         />
-        <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
-          {manualDate 
-            ? "Укажите дату поверки" 
-            : "Если не указана дата, будет использована текущая дата"}
-        </div>
       </div>
     </div>
   );

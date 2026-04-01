@@ -11,7 +11,8 @@ if (pdfFonts) {
 function PDFGenerator({ 
   fullDevice,
   device, 
-  currentData, 
+  currentData,
+  currentType,
   serialNumber, 
   diameter, 
   deviceType,
@@ -50,7 +51,15 @@ function PDFGenerator({
       // Рассчитываем следующую дату только если прибор годен
       let nextDate = null;
       if (isAllPassed) {
-        const period = currentData?.nextVerificationPeriod || device?.nextVerificationPeriod || 1;
+        // Приоритет: период из класса (currentData) -> из типа (currentType) -> из модели (device) -> 1
+        let period = currentData?.nextVerificationPeriod;
+        if (!period && currentType?.nextVerificationPeriod) {
+          period = currentType.nextVerificationPeriod;
+        }
+        if (!period) {
+          period = device?.nextVerificationPeriod || 1;
+        }
+        
         nextDate = new Date(verificationDateObj);
         nextDate.setFullYear(nextDate.getFullYear() + period);
         nextDate.setDate(nextDate.getDate() - 1);
@@ -368,7 +377,7 @@ function PDFGenerator({
       // Создаем структуру документа
       const docDefinition = {
         pageSize: 'A4',
-        pageMargins: [leftMargin, 20, rightMargin, 20],  // ИЗМЕНЕНО: было 30
+        pageMargins: [leftMargin, 20, rightMargin, 20],
         defaultStyle: {
           fontSize: 10,
           lineHeight: 1.2
@@ -434,7 +443,7 @@ function PDFGenerator({
           { 
             text: `Заключение о пригодности: ${isAllPassed ? 'ГОДЕН' : 'НЕ ГОДЕН'}`,
             bold: true,
-            margin: [0, 5, 0, 2],  // ИЗМЕНЕНО: было 8 и 3
+            margin: [0, 5, 0, 2],
             fontSize: 11,
             color: isAllPassed ? 'green' : 'red'
           },
@@ -447,7 +456,7 @@ function PDFGenerator({
               { width: '37%', text: '__________________________', alignment: 'center' },
               { width: '38%', text: '_______________________________', alignment: 'center' }
             ],
-            margin: [0, 15, 0, 2],  // ИЗМЕНЕНО: было 25 и 3
+            margin: [0, 15, 0, 2],
           },
           
           {

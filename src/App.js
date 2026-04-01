@@ -49,6 +49,11 @@ function App() {
     setDiameter('');
   }, [deviceClass]);
 
+  useEffect(() => {
+    setDeviceClass('');
+    setDiameter('');
+  }, [deviceType]);
+
   // Управление радио
   const togglePlay = () => {
     if (audioRef.current) {
@@ -93,16 +98,35 @@ function App() {
   const getCurrentDeviceData = () => {
     if (!selectedDevice) return null;
     
+    // Для приборов с models
     if (selectedDevice.models) {
-      if (model && deviceClass) {
-        return selectedDevice.models[model]?.classes[deviceClass];
+      const currentModel = model ? selectedDevice.models[model] : null;
+      
+      if (!currentModel) return selectedDevice;
+      
+      // Если у модели есть типы и выбран тип
+      if (currentModel.hasTypes && deviceType) {
+        const currentType = currentModel.types[deviceType];
+        
+        // Если у типа есть классы и выбран класс (для WPH-ZF)
+        if (currentType?.classes && deviceClass) {
+          return currentType.classes[deviceClass];
+        }
+        
+        // Если у типа нет классов, возвращаем тип (для WP-Dynamic)
+        return currentType;
       }
-      if (model) {
-        return selectedDevice.models[model];
+      
+      // Если у модели есть классы и выбран класс (для 55115-13)
+      if (currentModel.hasClasses && deviceClass) {
+        return currentModel.classes[deviceClass];
       }
-      return selectedDevice;
+      
+      // Возвращаем модель (для 40607-09)
+      return currentModel;
     }
     
+    // Для приборов с типами на уровне прибора (старая структура)
     if (selectedDevice.hasTypes && deviceType) {
       return selectedDevice.types[deviceType];
     }
@@ -121,6 +145,19 @@ function App() {
   };
 
   const currentModel = getCurrentModel();
+
+  const getCurrentType = () => {
+    if (!selectedDevice) return null;
+    if (selectedDevice.models) {
+      const currentModel = model ? selectedDevice.models[model] : null;
+      if (currentModel?.hasTypes && deviceType) {
+        return currentModel.types[deviceType];
+      }
+    }
+    return null;
+  };
+
+  const currentType = getCurrentType();
 
   const appStyle = {
     minHeight: '100vh',
@@ -271,6 +308,7 @@ function App() {
               fullDevice={selectedDevice}
               device={currentModel}
               currentData={currentData}
+              currentType={currentType}
               serialNumber={serialNumber}
               diameter={diameter}
               deviceType={deviceType}
