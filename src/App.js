@@ -161,7 +161,7 @@ function App() {
 
   const appStyle = {
     minHeight: '100vh',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#d1d5db',  // приятный серо-голубой оттенок, не слишком темный
     padding: '20px'
   };
 

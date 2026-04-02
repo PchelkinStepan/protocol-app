@@ -1,0 +1,441 @@
+{
+    "id": "48422-11-wphh",
+    "name": "WPH-H",
+    "displayName": "WPH-H",
+    "hasTypes": true,
+    "hasClasses": true,
+    "hasComposition": false,
+    "methodology": "МИ 1592-2015. Рекомендация. Государственная система обеспечения единства измерений. Счетчики воды. Методика поверки",
+    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+    "types": {
+      "cold": {
+        "displayName": "Холодная вода",
+        "nextVerificationPeriod": 6,
+        "errorLimits": ["5.0", "2.0", "2.0"],
+        "classes": {
+          "classA": {
+            "displayName": "Класс А",
+            "errorLimits": ["5.0", "2.0", "2.0"],
+            "diameters": {
+              "50": {
+                "displayName": "ДУ-50 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1.2, "volume": 223.2 },
+                  { "flow": 4.95, "volume": 496.8 },
+                  { "flow": 15, "volume": 500.4 }
+                ]
+              },
+              "65": {
+                "displayName": "ДУ-65 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 2, "volume": 403.2 },
+                  { "flow": 8.25, "volume": 824.4 },
+                  { "flow": 25, "volume": 832.8 }
+                ]
+              },
+              "80": {
+                "displayName": "ДУ-80 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 3.2, "volume": 640.8 },
+                  { "flow": 13.2, "volume": 1321.2 },
+                  { "flow": 40, "volume": 1333.2 }
+                ]
+              },
+              "100": {
+                "displayName": "ДУ-100 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 4.8, "volume": 957.6 },
+                  { "flow": 19.8, "volume": 1980 },
+                  { "flow": 60, "volume": 2000.4 }
+                ]
+              },
+              "125": {
+                "displayName": "ДУ-125 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 8, "volume": 1598.4 },
+                  { "flow": 33, "volume": 3301.2 },
+                  { "flow": 100, "volume": 3333.6 }
+                ]
+              },
+              "150": {
+                "displayName": "ДУ-150 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 12, "volume": 2397.6 },
+                  { "flow": 49.5, "volume": 4950 },
+                  { "flow": 150, "volume": 5000.4 }
+                ]
+              },
+              "200": {
+                "displayName": "ДУ-200 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 20, "volume": 4003.2 },
+                  { "flow": 82.5, "volume": 8251.2 },
+                  { "flow": 200, "volume": 6667.2 }
+                ]
+              }
+            }
+          },
+          "classB": {
+            "displayName": "Класс В",
+            "errorLimits": ["5.0", "2.0", "2.0"],
+            "diameters": {
+              "50": {
+                "displayName": "ДУ-50 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.45, "volume": 93.6 },
+                  { "flow": 3.3, "volume": 331.2 },
+                  { "flow": 15, "volume": 500.4 }
+                ]
+              },
+              "65": {
+                "displayName": "ДУ-65 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.75, "volume": 151.2 },
+                  { "flow": 5.5, "volume": 550.8 },
+                  { "flow": 25, "volume": 832.8 }
+                ]
+              },
+              "80": {
+                "displayName": "ДУ-80 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1.2, "volume": 237.6 },
+                  { "flow": 8.8, "volume": 878.4 },
+                  { "flow": 40, "volume": 1333.2 }
+                ]
+              },
+              "100": {
+                "displayName": "ДУ-100 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1.8, "volume": 360 },
+                  { "flow": 13.2, "volume": 1321.2 },
+                  { "flow": 60, "volume": 2000.4 }
+                ]
+              },
+              "125": {
+                "displayName": "ДУ-125 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 3, "volume": 597.6 },
+                  { "flow": 22, "volume": 2199.6 },
+                  { "flow": 100, "volume": 3333.6 }
+                ]
+              },
+              "150": {
+                "displayName": "ДУ-150 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 4.5, "volume": 900 },
+                  { "flow": 33, "volume": 3301.2 },
+                  { "flow": 150, "volume": 5000.4 }
+                ]
+              },
+              "200": {
+                "displayName": "ДУ-200 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 12, "volume": 2397.6 },
+                  { "flow": 55, "volume": 5500.8 },
+                  { "flow": 200, "volume": 6667.2 }
+                ]
+              }
+            }
+          },
+          "classC": {
+            "displayName": "Класс С",
+            "errorLimits": ["5.0", "2.0", "2.0"],
+            "diameters": {
+              "50": {
+                "displayName": "ДУ-50 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.09, "volume": 21.6 },
+                  { "flow": 0.2475, "volume": 25.2 },
+                  { "flow": 15, "volume": 500.4 }
+                ]
+              },
+              "65": {
+                "displayName": "ДУ-65 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.15, "volume": 28.8 },
+                  { "flow": 0.4125, "volume": 39.6 },
+                  { "flow": 25, "volume": 832.8 }
+                ]
+              },
+              "80": {
+                "displayName": "ДУ-80 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.24, "volume": 50.4 },
+                  { "flow": 0.6, "volume": 61.2 },
+                  { "flow": 40, "volume": 1333.2 }
+                ]
+              },
+              "100": {
+                "displayName": "ДУ-100 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.36, "volume": 72 },
+                  { "flow": 0.99, "volume": 100.8 },
+                  { "flow": 60, "volume": 2000.4 }
+                ]
+              },
+              "150": {
+                "displayName": "ДУ-150 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.9, "volume": 180 },
+                  { "flow": 2.475, "volume": 248.4 },
+                  { "flow": 150, "volume": 5000.4 }
+                ]
+              },
+              "200": {
+                "displayName": "ДУ-200 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1.5, "volume": 302.4 },
+                  { "flow": 4.125, "volume": 414 },
+                  { "flow": 200, "volume": 6667.2 }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "hot": {
+        "displayName": "Горячая вода",
+        "nextVerificationPeriod": 4,
+        "errorLimits": ["5.0", "2.0", "2.0"],
+        "classes": {
+          "classA": {
+            "displayName": "Класс А",
+            "errorLimits": ["5.0", "2.0", "2.0"],
+            "diameters": {
+              "50": {
+                "displayName": "ДУ-50 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1.2, "volume": 237.6 },
+                  { "flow": 3.3, "volume": 331.2 },
+                  { "flow": 15, "volume": 500.4 }
+                ]
+              },
+              "65": {
+                "displayName": "ДУ-65 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 2, "volume": 403.2 },
+                  { "flow": 5.5, "volume": 550.8 },
+                  { "flow": 25, "volume": 832.8 }
+                ]
+              },
+              "80": {
+                "displayName": "ДУ-80 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 3.2, "volume": 640.8 },
+                  { "flow": 8.8, "volume": 878.4 },
+                  { "flow": 40, "volume": 1333.2 }
+                ]
+              },
+              "100": {
+                "displayName": "ДУ-100 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 4.8, "volume": 957.6 },
+                  { "flow": 13.2, "volume": 1321.2 },
+                  { "flow": 60, "volume": 2000.4 }
+                ]
+              },
+              "125": {
+                "displayName": "ДУ-125 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 8, "volume": 1598.4 },
+                  { "flow": 22, "volume": 2199.6 },
+                  { "flow": 100, "volume": 3333.6 }
+                ]
+              },
+              "150": {
+                "displayName": "ДУ-150 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 12, "volume": 2397.6 },
+                  { "flow": 33, "volume": 3301.2 },
+                  { "flow": 150, "volume": 5000.4 }
+                ]
+              },
+              "200": {
+                "displayName": "ДУ-200 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 20, "volume": 4003.2 },
+                  { "flow": 55, "volume": 5500.8 },
+                  { "flow": 200, "volume": 6667.2 }
+                ]
+              }
+            }
+          },
+          "classB": {
+            "displayName": "Класс В",
+            "errorLimits": ["5.0", "2.0", "2.0"],
+            "diameters": {
+              "50": {
+                "displayName": "ДУ-50 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.6, "volume": 12.4 },
+                  { "flow": 2.475, "volume": 248.4 },
+                  { "flow": 15, "volume": 500.4 }
+                ]
+              },
+              "65": {
+                "displayName": "ДУ-65 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1, "volume": 201.6 },
+                  { "flow": 4.125, "volume": 414 },
+                  { "flow": 25, "volume": 832.8 }
+                ]
+              },
+              "80": {
+                "displayName": "ДУ-80 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1.6, "volume": 316.8 },
+                  { "flow": 6.6, "volume": 658.8 },
+                  { "flow": 40, "volume": 1332.2 }
+                ]
+              },
+              "100": {
+                "displayName": "ДУ-100 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 2.4, "volume": 482.4 },
+                  { "flow": 9.9, "volume": 990 },
+                  { "flow": 60, "volume": 2000.4 }
+                ]
+              },
+              "125": {
+                "displayName": "ДУ-125 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 4, "volume": 799.2 },
+                  { "flow": 16.5, "volume": 1648.8 },
+                  { "flow": 100, "volume": 3333.6 }
+                ]
+              },
+              "150": {
+                "displayName": "ДУ-150 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 6, "volume": 1202.4 },
+                  { "flow": 24.75, "volume": 2476.8 },
+                  { "flow": 150, "volume": 5000.4 }
+                ]
+              },
+              "200": {
+                "displayName": "ДУ-200 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 12, "volume": 2397.6 },
+                  { "flow": 41.25, "volume": 4125.6 },
+                  { "flow": 200, "volume": 6667.2 }
+                ]
+              }
+            }
+          },
+          "classC": {
+            "displayName": "Класс С",
+            "errorLimits": ["5.0", "2.0", "2.0"],
+            "diameters": {
+              "50": {
+                "displayName": "ДУ-50 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.3, "volume": 57.6 },
+                  { "flow": 1.65, "volume": 165.6 },
+                  { "flow": 15, "volume": 500.4 }
+                ]
+              },
+              "65": {
+                "displayName": "ДУ-65 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.5, "volume": 100.8 },
+                  { "flow": 2.75, "volume": 273.6 },
+                  { "flow": 25, "volume": 832.8 }
+                ]
+              },
+              "80": {
+                "displayName": "ДУ-80 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 0.8, "volume": 158.4 },
+                  { "flow": 4.4, "volume": 439.2 },
+                  { "flow": 40, "volume": 1333.2 }
+                ]
+              },
+              "100": {
+                "displayName": "ДУ-100 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 1.2, "volume": 237.6 },
+                  { "flow": 6.6, "volume": 658.8 },
+                  { "flow": 60, "volume": 2000.4 }
+                ]
+              },
+              "150": {
+                "displayName": "ДУ-150 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 3, "volume": 597.6 },
+                  { "flow": 16.5, "volume": 1648.8 },
+                  { "flow": 150, "volume": 5000.4 }
+                ]
+              },
+              "200": {
+                "displayName": "ДУ-200 мм",
+                "unit": "м³/ч",
+                "points": [
+                  { "flow": 5, "volume": 1000.8 },
+                  { "flow": 27.5, "volume": 2750.4 },
+                  { "flow": 200, "volume": 6667.2 }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр п. 1.7.1",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Опробование п. 1.7.2",
+        "type": "boolean",
+        "order": 2
+      },
+      {
+        "name": "Определение метрологических характеристик п. 1.7.3",
+        "type": "measurement",
+        "hasTable": true,
+        "tableType": "standard",
+        "order": 3
+      }
+    ]
+  }
