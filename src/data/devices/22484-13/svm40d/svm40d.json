@@ -1,0 +1,63 @@
+{
+    "id": "22484-13-svm40d",
+    "name": "СВМ-40Д",
+    "displayName": "СВМ-40Д",
+    "hasTypes": true,
+    "hasClasses": false,
+    "hasComposition": false,
+    "methodology": "МИ 1592-2015. Рекомендация. Государственная система обеспечения единства измерений. Счетчики воды. Методика поверки",
+    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+    "types": {
+      "cold": {
+        "displayName": "Холодная вода",
+        "nextVerificationPeriod": 6,
+        "errorLimits": ["5.0", "2.0", "2.0"],
+        "diameters": {
+          "40": {
+            "displayName": "ДУ-40 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.2, "volume": 43.2 },
+              { "flow": 0.88, "volume": 86.4 },
+              { "flow": 10, "volume": 333.6 }
+            ]
+          }
+        }
+      },
+      "hot": {
+        "displayName": "Горячая вода",
+        "nextVerificationPeriod": 4,
+        "errorLimits": ["5.0", "2.0", "2.0"],
+        "diameters": {
+          "40": {
+            "displayName": "ДУ-40 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.2, "volume": 43.2 },
+              { "flow": 0.88, "volume": 86.4 },
+              { "flow": 10, "volume": 333.6 }
+            ]
+          }
+        }
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр п. 1.7.1",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Опробование п. 1.7.2",
+        "type": "boolean",
+        "order": 2
+      },
+      {
+        "name": "Определение метрологических характеристик п. 1.7.3",
+        "type": "measurement",
+        "hasTable": true,
+        "tableType": "standard",
+        "order": 3
+      }
+    ]
+  }
