@@ -1,121 +1,123 @@
 {
-    "id": "51794-12-vst",
-    "name": "ВСТ",
-    "displayName": "ВСТ",
-    "hasTypes": false,
-    "hasClasses": true,
-    "hasComposition": false,
-    "methodology": "ГОСТ Р 8.1012-2022",
-    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
-    "nextVerificationPeriod": 6,
-    "errorLimits": ["5.0", "2.0", "2.0"],
-    "classes": {
-      "classA": {
-        "displayName": "Класс А",
-        "diameters": {
-          "15-0.6": {
-            "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.024, "volume": 7.2 },
-              { "flow": 0.066, "volume": 7.4 },
-              { "flow": 0.6, "volume": 20.4 }
-            ]
-          },
-          "15-1": {
-            "displayName": "ДУ-15 мм (Qn=1 м³/ч)",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.04, "volume": 7.2 },
-              { "flow": 0.11, "volume": 10.8 },
-              { "flow": 1.0, "volume": 33.6 }
-            ]
-          },
-          "15-1.5": {
-            "displayName": "ДУ-15 мм (Qn=1.5 м³/ч)",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.06, "volume": 14.4 },
-              { "flow": 0.165, "volume": 18 },
-              { "flow": 1.5, "volume": 50.4 }
-            ]
-          },
-          "20": {
-            "displayName": "ДУ-20 мм",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.1, "volume": 21.6 },
-              { "flow": 0.275, "volume": 28.8 },
-              { "flow": 2.5, "volume": 82.8 }
-            ]
-          }
-        }
-      },
-      "classB": {
-        "displayName": "Класс В",
-        "diameters": {
-          "15-0.6": {
-            "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.012, "volume": 7.2 },
-              { "flow": 0.0528, "volume": 7.4 },
-              { "flow": 0.6, "volume": 20.4 }
-            ]
-          },
-          "15-1": {
-            "displayName": "ДУ-15 мм (Qn=1 м³/ч)",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.02, "volume": 7.2 },
-              { "flow": 0.088, "volume": 7.4 },
-              { "flow": 1.0, "volume": 33.6 }
-            ]
-          },
-          "15-1.5": {
-            "displayName": "ДУ-15 мм (Qn=1.5 м³/ч)",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.03, "volume": 7.2 },
-              { "flow": 0.132, "volume": 14.4 },
-              { "flow": 1.5, "volume": 50.4 }
-            ]
-          },
-          "20": {
-            "displayName": "ДУ-20 мм",
-            "unit": "м³/ч",
-            "points": [
-              { "flow": 0.05, "volume": 7.2 },
-              { "flow": 0.22, "volume": 21.6 },
-              { "flow": 2.5, "volume": 82.8 }
-            ]
-          }
+  "id": "51794-12-vst",
+  "name": "ВСТ",
+  "displayName": "ВСТ",
+  "hasTypes": false,
+  "hasClasses": true,
+  "hasComposition": false,
+  "methodology": "ГОСТ Р 8.1012-2022",
+  "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+  "nextVerificationPeriod": 6,
+  "errorLimits": ["5.0", "2.0", "2.0"],
+  "classes": {
+    "classA": {
+      "displayName": "Класс А",
+      "errorLimits": ["5.0", "2.0", "2.0"],
+      "diameters": {
+        "15-0.6": {
+          "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.024, "volume": 7.2 },
+            { "flow": 0.066, "volume": 7.4 },
+            { "flow": 0.6, "volume": 20.4 }
+          ]
+        },
+        "15-1": {
+          "displayName": "ДУ-15 мм (Qn=1 м³/ч)",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.04, "volume": 7.2 },
+            { "flow": 0.11, "volume": 10.8 },
+            { "flow": 1.0, "volume": 33.6 }
+          ]
+        },
+        "15-1.5": {
+          "displayName": "ДУ-15 мм (Qn=1.5 м³/ч)",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.06, "volume": 14.4 },
+            { "flow": 0.165, "volume": 18 },
+            { "flow": 1.5, "volume": 50.4 }
+          ]
+        },
+        "20": {
+          "displayName": "ДУ-20 мм",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.1, "volume": 21.6 },
+            { "flow": 0.275, "volume": 28.8 },
+            { "flow": 2.5, "volume": 82.8 }
+          ]
         }
       }
     },
-    "operations": [
-      {
-        "name": "Внешний осмотр п. 4.2.7.1",
-        "type": "boolean",
-        "order": 1
-      },
-      {
-        "name": "Подтверждение соответствия программного обеспечения п. 4.2.7.2",
-        "type": "boolean",
-        "disabledByDefault": true,
-        "order": 2
-      },
-      {
-        "name": "Опробование п. 4.2.7.3",
-        "type": "boolean",
-        "order": 3
-      },
-      {
-        "name": "Определение относительной погрешности п. 1.2.7.4",
-        "type": "measurement",
-        "hasTable": true,
-        "tableType": "standard",
-        "order": 4
+    "classB": {
+      "displayName": "Класс В",
+      "errorLimits": ["5.0", "2.0", "2.0"],
+      "diameters": {
+        "15-0.6": {
+          "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.012, "volume": 7.2 },
+            { "flow": 0.0528, "volume": 7.4 },
+            { "flow": 0.6, "volume": 20.4 }
+          ]
+        },
+        "15-1": {
+          "displayName": "ДУ-15 мм (Qn=1 м³/ч)",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.02, "volume": 7.2 },
+            { "flow": 0.088, "volume": 7.4 },
+            { "flow": 1.0, "volume": 33.6 }
+          ]
+        },
+        "15-1.5": {
+          "displayName": "ДУ-15 мм (Qn=1.5 м³/ч)",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.03, "volume": 7.2 },
+            { "flow": 0.132, "volume": 14.4 },
+            { "flow": 1.5, "volume": 50.4 }
+          ]
+        },
+        "20": {
+          "displayName": "ДУ-20 мм",
+          "unit": "м³/ч",
+          "points": [
+            { "flow": 0.05, "volume": 7.2 },
+            { "flow": 0.22, "volume": 21.6 },
+            { "flow": 2.5, "volume": 82.8 }
+          ]
+        }
       }
-    ]
-  }
+    }
+  },
+  "operations": [
+    {
+      "name": "Внешний осмотр п. 4.2.7.1",
+      "type": "boolean",
+      "order": 1
+    },
+    {
+      "name": "Подтверждение соответствия программного обеспечения п. 4.2.7.2",
+      "type": "boolean",
+      "disabledByDefault": true,
+      "order": 2
+    },
+    {
+      "name": "Опробование п. 4.2.7.3",
+      "type": "boolean",
+      "order": 3
+    },
+    {
+      "name": "Определение относительной погрешности п. 1.2.7.4",
+      "type": "measurement",
+      "hasTable": true,
+      "tableType": "standard",
+      "order": 4
+    }
+  ]
+}

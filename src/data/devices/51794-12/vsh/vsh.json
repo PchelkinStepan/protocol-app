@@ -12,6 +12,7 @@
   "classes": {
     "classA": {
       "displayName": "Класс А",
+      "errorLimits": ["5.0", "2.0", "2.0"],
       "diameters": {
         "15-0.6": {
           "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
@@ -53,6 +54,7 @@
     },
     "classB": {
       "displayName": "Класс В",
+      "errorLimits": ["5.0", "2.0", "2.0"],
       "diameters": {
         "15-0.6": {
           "displayName": "ДУ-15 мм (Qn=0.6 м³/ч)",
