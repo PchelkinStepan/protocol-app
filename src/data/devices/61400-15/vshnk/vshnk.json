@@ -1,0 +1,74 @@
+{
+    "id": "61400-15-vshnk",
+    "name": "ВСХНК (комбинированный)",
+    "methodology": "ГОСТ Р 8.1012-2022",
+    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+    "hasTypes": false,
+    "hasClasses": false,
+    "hasComposition": false,
+    "nextVerificationPeriod": 6,
+    "errorLimits": ["5.0", "2.0", "2.0"],
+    "diameters": {
+      "50-20": {
+        "displayName": "ДУ 50/20 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.05, "volume": 7.4 },
+          { "flow": 0.22, "volume": 21.6 },
+          { "flow": 50.0, "volume": 1666.8 }
+        ]
+      },
+      "65-20": {
+        "displayName": "ДУ 65/20 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.05, "volume": 7.4 },
+          { "flow": 0.22, "volume": 21.6 },
+          { "flow": 60.0, "volume": 2000.4 }
+        ]
+      },
+      "80-20": {
+        "displayName": "ДУ 80/20 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.05, "volume": 7.4 },
+          { "flow": 0.22, "volume": 21.6 },
+          { "flow": 120.0, "volume": 3999.6 }
+        ]
+      },
+      "100-20": {
+        "displayName": "ДУ 100/20 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 0.05, "volume": 7.4 },
+          { "flow": 0.22, "volume": 21.6 },
+          { "flow": 230.0, "volume": 7666.8 }
+        ]
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр п. 4.2.7.1",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Подтверждение соответствия программного обеспечения п. 4.2.7.2",
+        "type": "boolean",
+        "disabledByDefault": true,
+        "order": 2
+      },
+      {
+        "name": "Опробование п. 4.2.7.3",
+        "type": "boolean",
+        "order": 3
+      },
+      {
+        "name": "Определение относительной погрешности п. 4.2.7.4",
+        "type": "measurement",
+        "hasTable": true,
+        "tableType": "standard",
+        "order": 4
+      }
+    ]
+  }
