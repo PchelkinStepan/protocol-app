@@ -1,0 +1,98 @@
+{
+    "id": "61401-15-vshnd",
+    "name": "ВСХНд",
+    "displayName": "ВСХНд",
+    "hasTypes": true,
+    "hasClasses": false,
+    "hasComposition": false,
+    "methodology": "ГОСТ Р 8.1012-2022",
+    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+    "types": {
+      "cold": {
+        "displayName": "Холодная вода",
+        "nextVerificationPeriod": 6,
+        "errorLimits": ["5.0", "2.0", "2.0"],
+        "diameters": {
+          "40": {
+            "displayName": "ДУ-40 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.64, "volume": 129.6 },
+              { "flow": 33, "volume": 3301.2 },
+              { "flow": 60.0, "volume": 2000.4 }
+            ]
+          },
+          "50": {
+            "displayName": "ДУ-50 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.64, "volume": 129.6 },
+              { "flow": 55, "volume": 5500.8 },
+              { "flow": 90, "volume": 3000 }
+            ]
+          },
+          "65": {
+            "displayName": "ДУ-65 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.8, "volume": 158.4 },
+              { "flow": 69.3, "volume": 6930 },
+              { "flow": 120, "volume": 3999.6 }
+            ]
+          },
+          "80": {
+            "displayName": "ДУ-80 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.8, "volume": 158.4 },
+              { "flow": 132, "volume": 13201.2 },
+              { "flow": 200, "volume": 6667.2 }
+            ]
+          },
+          "100": {
+            "displayName": "ДУ-100 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 1.28, "volume": 259.2 },
+              { "flow": 253, "volume": 25300.8 },
+              { "flow": 300, "volume": 9999.6 }
+            ]
+          },
+          "125": {
+            "displayName": "ДУ-125 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 2, "volume": 403.2 },
+              { "flow": 275, "volume": 27500.4 },
+              { "flow": 350, "volume": 11666.4 }
+            ]
+          }
+        }
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр средства измерений п. 4.2.7.1",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Подтверждение соответствия программного обеспечения п. 4.2.7.2",
+        "type": "boolean",
+        "disabledByDefault": true,
+        "order": 2
+      },
+      {
+        "name": "Опробование п. 4.2.7.3",
+        "type": "boolean",
+        "order": 2
+      },
+      {
+        "name": "Определение относительной погрешности п. 4.2.7.4",
+        "type": "measurement",
+        "hasTable": true,
+        "tableType": "standard",
+        "order": 3
+      }
+    ]
+  }

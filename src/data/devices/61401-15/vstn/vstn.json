@@ -1,0 +1,177 @@
+{
+    "id": "61401-15-vstn",
+    "name": "ВСТН",
+    "displayName": "ВСТН",
+    "hasTypes": true,
+    "hasClasses": false,
+    "hasComposition": false,
+    "methodology": "ГОСТ Р 8.1012-2022",
+    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+    "types": {
+      "cold": {
+        "displayName": "Холодная вода",
+        "nextVerificationPeriod": 6,
+        "errorLimits": ["5.0", "2.0", "2.0"],
+        "diameters": {
+          "40": {
+            "displayName": "ДУ-40 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.63, "volume": 122.4 },
+              { "flow": 1.1, "volume": 111.6 },
+              { "flow": 25, "volume": 832.8 }
+            ]
+          },
+          "50": {
+            "displayName": "ДУ-50 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 0.63, "volume": 122.4 },
+              { "flow": 1.1, "volume": 111.6 },
+              { "flow": 25, "volume": 832.8 }
+            ]
+          },
+          "65": {
+            "displayName": "ДУ-65 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 1, "volume": 201.6 },
+              { "flow": 1.76, "volume": 176.4 },
+              { "flow": 40, "volume": 1333.2 }
+            ]
+          },
+          "80": {
+            "displayName": "ДУ-80 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 1.58, "volume": 316.8 },
+              { "flow": 2.772, "volume": 277.2 },
+              { "flow": 63, "volume": 2100 }
+            ]
+          },
+          "100": {
+            "displayName": "ДУ-100 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 2.4, "volume": 482.4 },
+              { "flow": 4.4, "volume": 439.2 },
+              { "flow": 100, "volume": 3333.6 }
+            ]
+          },
+          "125": {
+            "displayName": "ДУ-125 мм",
+            "unit": "м³/ч",
+            "points": [
+              { "flow": 4, "volume": 799.2 },
+              { "flow": 7.04, "volume": 705.6 },
+              { "flow": 160, "volume": 5332.8 }
+            ]
+          },
+          "150": {
+            "displayName": "ДУ-150 мм",
+            "unit": "м³/ч",
+            "points": [
+                { "flow": 6, "volume": 1202.4 },
+                { "flow": 11, "volume": 1101.6 },
+                { "flow": 250, "volume": 8332.8 }
+            ]
+          }
+        }
+      },
+      "hot": {
+        "displayName": "Горячая вода",
+        "nextVerificationPeriod": 4,
+        "errorLimits": ["5.0", "2.0", "2.0"],
+        "diameters": {
+            "40": {
+              "displayName": "ДУ-40 мм",
+              "unit": "м³/ч",
+              "points": [
+                { "flow": 0.63, "volume": 122.4 },
+                { "flow": 1.1, "volume": 111.6 },
+                { "flow": 25, "volume": 832.8 }
+              ]
+            },
+            "50": {
+              "displayName": "ДУ-50 мм",
+              "unit": "м³/ч",
+              "points": [
+                { "flow": 0.63, "volume": 122.4 },
+                { "flow": 1.1, "volume": 111.6 },
+                { "flow": 25, "volume": 832.8 }
+              ]
+            },
+            "65": {
+              "displayName": "ДУ-65 мм",
+              "unit": "м³/ч",
+              "points": [
+                { "flow": 1, "volume": 201.6 },
+                { "flow": 1.76, "volume": 176.4 },
+                { "flow": 40, "volume": 1333.2 }
+              ]
+            },
+            "80": {
+              "displayName": "ДУ-80 мм",
+              "unit": "м³/ч",
+              "points": [
+                { "flow": 1.58, "volume": 316.8 },
+                { "flow": 2.772, "volume": 277.2 },
+                { "flow": 63, "volume": 2100 }
+              ]
+            },
+            "100": {
+              "displayName": "ДУ-100 мм",
+              "unit": "м³/ч",
+              "points": [
+                { "flow": 2.4, "volume": 482.4 },
+                { "flow": 4.4, "volume": 439.2 },
+                { "flow": 100, "volume": 3333.6 }
+              ]
+            },
+            "125": {
+              "displayName": "ДУ-125 мм",
+              "unit": "м³/ч",
+              "points": [
+                { "flow": 4, "volume": 799.2 },
+                { "flow": 7.04, "volume": 705.6 },
+                { "flow": 160, "volume": 5332.8 }
+              ]
+            },
+            "150": {
+              "displayName": "ДУ-150 мм",
+              "unit": "м³/ч",
+              "points": [
+                  { "flow": 6, "volume": 1202.4 },
+                  { "flow": 11, "volume": 1101.6 },
+                  { "flow": 250, "volume": 8332.8 }
+              ]
+            }
+          }
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр средства измерений п. 4.2.7.1",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Подтверждение соответствия программного обеспечения п. 4.2.7.2",
+        "type": "boolean",
+        "disabledByDefault": true,
+        "order": 2
+      },
+      {
+        "name": "Опробование п. 4.2.7.3",
+        "type": "boolean",
+        "order": 3
+      },
+      {
+        "name": "Определение относительной погрешности п. 4.2.7.4",
+        "type": "measurement",
+        "hasTable": true,
+        "tableType": "standard",
+        "order": 4
+      }
+    ]
+  }
