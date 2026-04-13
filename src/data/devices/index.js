@@ -14,6 +14,7 @@ import device6140115 from './61401-15';
 import device6140015 from './61400-15';
 import device6663517 from './66635-17';
 import device7756020 from './77560-20';
+import device3253911 from './32539-11';
 
 const devicesData = {
   [device1582007.id]: device1582007,
@@ -32,6 +33,7 @@ const devicesData = {
   [device6140015.id]: device6140015,
   [device6663517.id]: device6663517,
   [device7756020.id]: device7756020,
+  [device3253911.id]: device3253911,
 };
 
 export default devicesData;
