@@ -253,7 +253,6 @@ function App() {
         </div>
 
         <h1 style={headerStyle}>
-          Протокол поверки СИ
         </h1>
 
         <div style={cardStyle}>

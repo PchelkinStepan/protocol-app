@@ -2,6 +2,66 @@ import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import devicesData from '../data/devices';
 
+// Функция для транслитерации кириллицы в латиницу (простая версия)
+function transliterate(text) {
+  const map = {
+    'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
+    'Ж': 'ZH', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
+    'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
+    'Ф': 'F', 'Х': 'H', 'Ц': 'TS', 'Ч': 'CH', 'Ш': 'SH', 'Щ': 'SCH',
+    'Ъ': '', 'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'YU', 'Я': 'YA',
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+    'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+    'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+    'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch',
+    'ъ': '', 'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya'
+  };
+  return text.split('').map(char => map[char] || char).join('');
+}
+
+// Функция для сбора всех названий моделей прибора
+function getAllModelNames(device) {
+  const names = new Set(); // используем Set для уникальности
+  
+  // Если есть модели
+  if (device.models) {
+    Object.entries(device.models).forEach(([key, model]) => {
+      // Добавляем ключ модели (например, "mtkin", "mtwf")
+      names.add(key);
+      
+      // Добавляем displayName и name
+      if (model.displayName) names.add(model.displayName);
+      if (model.name) names.add(model.name);
+      
+      // Транслитерируем русские названия
+      if (model.displayName) names.add(transliterate(model.displayName));
+      if (model.name) names.add(transliterate(model.name));
+      
+      // Если у модели есть типы
+      if (model.types) {
+        Object.entries(model.types).forEach(([typeKey, type]) => {
+          names.add(typeKey);
+          if (type.displayName) names.add(type.displayName);
+          if (type.name) names.add(type.name);
+          if (type.displayName) names.add(transliterate(type.displayName));
+        });
+      }
+    });
+  }
+  
+  // Если есть типы напрямую
+  if (device.types) {
+    Object.entries(device.types).forEach(([key, type]) => {
+      names.add(key);
+      if (type.displayName) names.add(type.displayName);
+      if (type.name) names.add(type.name);
+      if (type.displayName) names.add(transliterate(type.displayName));
+    });
+  }
+  
+  return Array.from(names);
+}
+
 function DeviceSearch({ onDeviceSelect, onSearchChange }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -14,12 +74,23 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
       onSearchChange();
     }
     
-    if (query.length >= 3) {
+    if (query.length >= 2) {
+      const searchLower = query.toLowerCase();
       const devicesArray = Object.values(devicesData);
       const results = devicesArray.filter(device => {
-        const matchesId = device.id.toLowerCase().includes(query.toLowerCase());
-        const matchesName = device.name.toLowerCase().includes(query.toLowerCase());
-        return matchesId || matchesName;
+        // Поиск по ID
+        const matchesId = device.id.toLowerCase().includes(searchLower);
+        
+        // Поиск по названию прибора
+        const matchesName = device.name.toLowerCase().includes(searchLower);
+        
+        // Поиск по названиям моделей
+        const modelNames = getAllModelNames(device);
+        const matchesModel = modelNames.some(name => 
+          name.toLowerCase().includes(searchLower)
+        );
+        
+        return matchesId || matchesName || matchesModel;
       });
       setSearchResults(results);
       setShowResults(true);
@@ -44,10 +115,8 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
     }
   };
 
-  // Получаем все приборы для быстрых кнопок
   const allDevices = Object.values(devicesData);
 
-  // Компактные стили для кнопок
   const buttonStyle = {
     padding: '8px 0',
     border: '1px solid #e0e0e0',
@@ -59,7 +128,7 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
     fontSize: '14px',
     fontWeight: 500,
     color: '#007bff',
-    flex: '1 1 calc(16.666% - 12px)', // 6 кнопок в ряд с учетом gap
+    flex: '1 1 calc(16.666% - 12px)',
     minWidth: '100px'
   };
 
@@ -72,7 +141,6 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
 
   return (
     <div>
-      {/* Поле поиска */}
       <div style={{ marginBottom: '20px', position: 'relative' }}>
         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500 }}>
           Поиск по госреестру или названию
@@ -82,7 +150,7 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Введите номер госреестра (например: 15820-07) или название"
+            placeholder="Введите номер госреестра или название прибора/модели (например: WTC, MTK, ВСКМ90)"
             style={{
               width: '100%',
               padding: '12px',
@@ -93,7 +161,7 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
               transition: 'border-color 0.3s',
               outline: 'none'
             }}
-            onFocus={() => searchQuery.length >= 3 && setShowResults(true)}
+            onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
           />
           {searchQuery && (
             <button
@@ -115,7 +183,6 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
           <Search style={{ position: 'absolute', right: '12px', top: '12px', color: '#999' }} size={20} />
         </div>
 
-        {/* Результаты поиска */}
         {showResults && searchResults.length > 0 && (
           <div style={{
             position: 'absolute',
@@ -151,7 +218,7 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
           </div>
         )}
 
-        {showResults && searchResults.length === 0 && searchQuery.length >= 3 && (
+        {showResults && searchResults.length === 0 && searchQuery.length >= 2 && (
           <div style={{
             position: 'absolute',
             zIndex: 1000,
@@ -164,12 +231,11 @@ function DeviceSearch({ onDeviceSelect, onSearchChange }) {
             textAlign: 'center',
             color: '#666'
           }}>
-            Прибор с таким номером не найден
+            Прибор с таким названием не найден
           </div>
         )}
       </div>
 
-      {/* Быстрые кнопки выбора приборов - только номера */}
       {allDevices.length > 0 && (
         <div style={{ marginTop: '20px' }}>
           <label style={{ display: 'block', marginBottom: '10px', fontWeight: 500, fontSize: '13px', color: '#888' }}>
