@@ -1,0 +1,87 @@
+{
+    "id": "32540-11-stvx",
+    "name": "СТВХ",
+    "displayName": "СТВХ",
+    "hasTypes": false,
+    "hasClasses": false,
+    "hasComposition": false,
+    "methodology": "ГОСТ 8.156-83. 'ГСП. Счетчики холодной воды. Методы и средства поверки'",
+    "standards": "77099.19.ВЭ.01415406, Установка поверочная автоматизированная УПРС +, зав. № 100; Термогигрометр ИВА-6Н-Д зав. № 18866; Секундомер электронный 'Интеграл С-01', зав. № 404737",
+    "nextVerificationPeriod": 6,
+    "errorLimits": ["5.0", "2.0", "2.0"],
+    "diameters": {
+      "50": {
+        "displayName": "ДУ-50 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 45, "volume": 200 },
+          { "flow": 2.25, "volume": 100 },
+          { "flow": 0.34, "volume": 50 }
+        ]
+      },
+      "65": {
+        "displayName": "ДУ-65 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 60, "volume": 500 },
+          { "flow": 3.75, "volume": 500 },
+          { "flow": 0.56, "volume": 200 }
+        ]
+      },
+      "80": {
+        "displayName": "ДУ-80 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 100, "volume": 500 },
+          { "flow": 6, "volume": 500 },
+          { "flow": 0.9, "volume": 200 }
+        ]
+      },
+      "100": {
+        "displayName": "ДУ-100 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 150, "volume": 5000 },
+          { "flow": 9, "volume": 2000 },
+          { "flow": 1.35, "volume": 1000 }
+        ]
+      },
+      "150": {
+        "displayName": "ДУ-150 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 250, "volume": 5000 },
+          { "flow": 22.5, "volume": 5000 },
+          { "flow": 3.38, "volume": 2000 }
+        ]
+      },
+      "200": {
+        "displayName": "ДУ-200 мм",
+        "unit": "м³/ч",
+        "points": [
+          { "flow": 300, "volume": 10000 },
+          { "flow": 37.5, "volume": 5000 },
+          { "flow": 5.63, "volume": 2000 }
+        ]
+      }
+    },
+    "operations": [
+      {
+        "name": "Внешний осмотр (п. 3.1)",
+        "type": "boolean",
+        "order": 1
+      },
+      {
+        "name": "Опробование (п. 3.2)",
+        "type": "boolean",
+        "order": 2
+      },
+      {
+        "name": "Определение относительной погрешности (п. 3.4)",
+        "type": "measurement",
+        "hasTable": true,
+        "tableType": "standard",
+        "order": 3
+      }
+    ]
+  }
