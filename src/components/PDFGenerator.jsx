@@ -482,9 +482,11 @@ function PDFGenerator({
       };
 
       // Генерируем PDF
-      const fileName = isAllPassed 
-        ? `protocol_${serialNumber}_${formatDate(verificationDateObj)}.pdf`
-        : `protocol_${serialNumber}_${formatDate(verificationDateObj)}_rejected.pdf`;
+// Убираем префикс "№П-" и всё, что идет после дефиса (включая год)
+const cleanProtocolNumber = protocolNumber.replace('№П-', '').replace(/-.*$/, '');
+const fileName = isAllPassed 
+  ? `${cleanProtocolNumber}_${serialNumber}.pdf`
+  : `${cleanProtocolNumber}_${serialNumber}_rejected.pdf`;
       
       pdfMake.createPdf(docDefinition).download(fileName);
       
