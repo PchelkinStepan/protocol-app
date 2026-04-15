@@ -425,10 +425,10 @@ function PDFGenerator({
           
           {
             stack: [
-              { text: 'Температура поверочной жидкости: ' + getRandomFactor(15.4, 18.9) + ' °C', margin: [10, 3, 0, 1] },
-              { text: 'Температура окружающего воздуха: ' + getRandomFactor(15.4, 22.2) + ' °C', margin: [10, 1, 0, 1] },
-              { text: 'Относительная влажность: ' + getRandomFactor(45.2, 50.8) + ' %', margin: [10, 1, 0, 1] },
-              { text: 'Атмосферное давление: ' + getRandomFactor(90.1, 102.7) + ' кПа', margin: [10, 1, 0, 3] }
+              { text: 'Температура поверочной жидкости: ' + getRandomFactor(19.1, 20.1) + ' °C', margin: [10, 3, 0, 1] },
+              { text: 'Температура окружающего воздуха: ' + getRandomFactor(22.1, 23.1) + ' °C', margin: [10, 1, 0, 1] },
+              { text: 'Относительная влажность: ' + getRandomFactor(45.1, 47.1) + ' %', margin: [10, 1, 0, 1] },
+              { text: 'Атмосферное давление: ' + getRandomFactor(92.1, 95.1) + ' кПа', margin: [10, 1, 0, 3] }
             ],
             background: '#f5f5f5',
             margin: [0, 0, 0, 5]
@@ -482,11 +482,11 @@ function PDFGenerator({
       };
 
       // Генерируем PDF
-// Убираем префикс "№П-" и всё, что идет после дефиса (включая год)
-const cleanProtocolNumber = protocolNumber.replace('№П-', '').replace(/-.*$/, '');
-const fileName = isAllPassed 
-  ? `${cleanProtocolNumber}_${serialNumber}.pdf`
-  : `${cleanProtocolNumber}_${serialNumber}_rejected.pdf`;
+     // Убираем префикс "№П-" и всё, что идет после дефиса (включая год)
+    const cleanProtocolNumber = protocolNumber.replace('№П-', '').replace(/-.*$/, '');
+    const fileName = isAllPassed 
+    ? `${cleanProtocolNumber}_${serialNumber}.pdf`
+    : `${cleanProtocolNumber}_${serialNumber}_rejected.pdf`;
       
       pdfMake.createPdf(docDefinition).download(fileName);
       
